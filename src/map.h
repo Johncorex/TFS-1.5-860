@@ -37,18 +37,39 @@ public:
 	AStarNode* getBestNode();
 	void closeNode(AStarNode* node);
 	void openNode(AStarNode* node);
+	void decreaseKey(AStarNode* node, int_fast32_t newF);
 	int_fast32_t getClosedNodes() const;
 	AStarNode* getNodeByPosition(uint32_t x, uint32_t y);
+	bool isOpen(AStarNode* node) const { return openNodes[node - nodes]; }
+
+	void setTarget(int32_t tx, int32_t ty) { targetX = tx; targetY = ty; }
 
 	static int_fast32_t getMapWalkCost(AStarNode* node, const Position& neighborPos);
 	static int_fast32_t getTileWalkCost(const Creature& creature, const Tile* tile);
 
 private:
+	void heapPush(size_t nodeIndex);
+	size_t heapPop();
+	void bubbleUp(size_t pos);
+	void bubbleDown(size_t pos);
+
 	AStarNode nodes[MAX_NODES];
 	bool openNodes[MAX_NODES];
+	size_t heap[MAX_NODES];
+	size_t heapIndices[MAX_NODES];
+	size_t heapSize = 0;
 	std::unordered_map<uint32_t, AStarNode*> nodeTable;
 	size_t curNode;
 	int_fast32_t closedNodes;
+	int32_t targetX = 0;
+	int32_t targetY = 0;
+
+	int_fast32_t heuristic(const AStarNode* node) const
+	{
+		int32_t dx = std::abs(static_cast<int32_t>(node->x) - targetX);
+		int32_t dy = std::abs(static_cast<int32_t>(node->y) - targetY);
+		return std::max(dx, dy) * MAP_NORMALWALKCOST;
+	}
 };
 
 using SpectatorCache = std::unordered_map<Position, SpectatorVec>;

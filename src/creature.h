@@ -310,6 +310,7 @@ public:
 	{
 		tile = static_cast<Tile*>(cylinder);
 		position = tile->getPosition();
+		pathCacheValid = false;
 	}
 
 	const Position& getPosition() const override final { return position; }
@@ -417,6 +418,12 @@ protected:
 	bool inCheckCreaturesVector = false;
 	bool skillLoss = true;
 	bool lootDrop = true;
+
+	mutable Position pathCacheStart;
+	mutable Position pathCacheTarget;
+	mutable FindPathParams pathCacheParams;
+	mutable std::vector<Direction> pathCacheDirs;
+	mutable bool pathCacheValid = false;
 	bool cancelNextWalk = false;
 	bool hasFollowPath = false;
 	bool forceUpdateFollowPath = false;

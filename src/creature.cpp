@@ -1640,7 +1640,25 @@ bool Creature::isInvisible() const
 
 bool Creature::getPathTo(const Position& targetPos, std::vector<Direction>& dirList, const FindPathParams& fpp) const
 {
-	return g_game.map.getPathMatching(*this, dirList, FrozenPathingConditionCall(targetPos), fpp);
+	if (pathCacheValid && pathCacheTarget == targetPos && position == pathCacheStart &&
+	    pathCacheParams.fullPathSearch == fpp.fullPathSearch && pathCacheParams.clearSight == fpp.clearSight &&
+	    pathCacheParams.allowDiagonal == fpp.allowDiagonal && pathCacheParams.keepDistance == fpp.keepDistance &&
+	    pathCacheParams.maxSearchDist == fpp.maxSearchDist && pathCacheParams.minTargetDist == fpp.minTargetDist &&
+	    pathCacheParams.maxTargetDist == fpp.maxTargetDist) {
+		dirList = pathCacheDirs;
+		return true;
+	}
+
+	bool result = g_game.map.getPathMatching(*this, dirList, FrozenPathingConditionCall(targetPos), fpp);
+
+	pathCacheValid = result;
+	pathCacheStart = position;
+	pathCacheTarget = targetPos;
+	pathCacheParams = fpp;
+	if (result) {
+		pathCacheDirs = dirList;
+	}
+	return result;
 }
 
 bool Creature::getPathTo(const Position& targetPos, std::vector<Direction>& dirList, int32_t minTargetDist,

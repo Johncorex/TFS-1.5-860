@@ -666,6 +666,7 @@ bool Map::getPathMatching(const Creature& creature, std::vector<Direction>& dirL
 	Position endPos;
 
 	AStarNodes nodes(pos.x, pos.y);
+	nodes.setTarget(pathCondition.targetPos.x, pathCondition.targetPos.y);
 
 	int32_t bestMatch = 0;
 
@@ -772,7 +773,11 @@ bool Map::getPathMatching(const Creature& creature, std::vector<Direction>& dirL
 
 				neighborNode->f = newf;
 				neighborNode->parent = n;
-				nodes.openNode(neighborNode);
+				if (nodes.isOpen(neighborNode)) {
+					nodes.decreaseKey(neighborNode, newf);
+				} else {
+					nodes.openNode(neighborNode);
+				}
 			} else {
 				// Does not exist in the open/closed list, create a new node
 				neighborNode = nodes.createOpenNode(n, pos.x, pos.y, newf);
@@ -831,10 +836,11 @@ bool Map::getPathMatching(const Creature& creature, std::vector<Direction>& dirL
 
 // AStarNodes
 
-AStarNodes::AStarNodes(uint32_t x, uint32_t y) : nodes(), openNodes()
+AStarNodes::AStarNodes(uint32_t x, uint32_t y) : nodes(), openNodes(), heapIndices()
 {
 	curNode = 1;
 	closedNodes = 0;
+	heapSize = 0;
 	openNodes[0] = true;
 
 	AStarNode& startNode = nodes[0];
@@ -843,6 +849,7 @@ AStarNodes::AStarNodes(uint32_t x, uint32_t y) : nodes(), openNodes()
 	startNode.y = static_cast<uint16_t>(y);
 	startNode.f = 0;
 	nodeTable[(x << 16) | y] = nodes;
+	heapPush(0);
 }
 
 AStarNode* AStarNodes::createOpenNode(AStarNode* parent, uint32_t x, uint32_t y, int_fast32_t f)
@@ -860,28 +867,18 @@ AStarNode* AStarNodes::createOpenNode(AStarNode* parent, uint32_t x, uint32_t y,
 	node->x = static_cast<uint16_t>(x);
 	node->y = static_cast<uint16_t>(y);
 	node->f = f;
+	heapPush(retNode);
 	return node;
 }
 
 AStarNode* AStarNodes::getBestNode()
 {
-	if (curNode == 0) {
+	if (heapSize == 0) {
 		return nullptr;
 	}
 
-	int32_t best_node_f = std::numeric_limits<int32_t>::max();
-	int32_t best_node = -1;
-	for (size_t i = 0; i < curNode; i++) {
-		if (openNodes[i] && nodes[i].f < best_node_f) {
-			best_node_f = nodes[i].f;
-			best_node = i;
-		}
-	}
-
-	if (best_node >= 0) {
-		return nodes + best_node;
-	}
-	return nullptr;
+	size_t bestIdx = heapPop();
+	return nodes + bestIdx;
 }
 
 void AStarNodes::closeNode(AStarNode* node)
@@ -899,7 +896,15 @@ void AStarNodes::openNode(AStarNode* node)
 	if (!openNodes[index]) {
 		openNodes[index] = true;
 		--closedNodes;
+		heapPush(index);
 	}
+}
+
+void AStarNodes::decreaseKey(AStarNode* node, int_fast32_t newF)
+{
+	size_t index = node - nodes;
+	node->f = newF;
+	bubbleUp(heapIndices[index]);
 }
 
 int_fast32_t AStarNodes::getClosedNodes() const { return closedNodes; }
@@ -911,6 +916,75 @@ AStarNode* AStarNodes::getNodeByPosition(uint32_t x, uint32_t y)
 		return nullptr;
 	}
 	return it->second;
+}
+
+void AStarNodes::heapPush(size_t nodeIndex)
+{
+	heapIndices[nodeIndex] = heapSize;
+	heap[heapSize] = nodeIndex;
+	++heapSize;
+	bubbleUp(heapSize - 1);
+}
+
+size_t AStarNodes::heapPop()
+{
+	size_t top = heap[0];
+	openNodes[top] = false;
+	--heapSize;
+	if (heapSize > 0) {
+		heap[0] = heap[heapSize];
+		heapIndices[heap[0]] = 0;
+		bubbleDown(0);
+	}
+	return top;
+}
+
+void AStarNodes::bubbleUp(size_t pos)
+{
+	int_fast32_t f = nodes[heap[pos]].f + heuristic(&nodes[heap[pos]]);
+	while (pos > 0) {
+		size_t parentPos = (pos - 1) / 2;
+		size_t parentIdx = heap[parentPos];
+		int_fast32_t parentF = nodes[parentIdx].f + heuristic(&nodes[parentIdx]);
+		if (f >= parentF) {
+			break;
+		}
+		std::swap(heap[pos], heap[parentPos]);
+		heapIndices[heap[pos]] = pos;
+		heapIndices[heap[parentPos]] = parentPos;
+		pos = parentPos;
+	}
+}
+
+void AStarNodes::bubbleDown(size_t pos)
+{
+	int_fast32_t f = nodes[heap[pos]].f + heuristic(&nodes[heap[pos]]);
+	while (true) {
+		size_t smallest = pos;
+		size_t left = 2 * pos + 1;
+		size_t right = 2 * pos + 2;
+
+		if (left < heapSize) {
+			int_fast32_t leftF = nodes[heap[left]].f + heuristic(&nodes[heap[left]]);
+			if (leftF < f) {
+				smallest = left;
+				f = leftF;
+			}
+		}
+		if (right < heapSize) {
+			int_fast32_t rightF = nodes[heap[right]].f + heuristic(&nodes[heap[right]]);
+			if (rightF < f) {
+				smallest = right;
+			}
+		}
+		if (smallest == pos) {
+			break;
+		}
+		std::swap(heap[pos], heap[smallest]);
+		heapIndices[heap[pos]] = pos;
+		heapIndices[heap[smallest]] = smallest;
+		pos = smallest;
+	}
 }
 
 int_fast32_t AStarNodes::getMapWalkCost(AStarNode* node, const Position& neighborPos)
