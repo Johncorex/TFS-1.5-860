@@ -139,6 +139,8 @@ public:
 	bool isFriend(const Creature* creature) const;
 	bool isOpponent(const Creature* creature) const;
 
+	bool hasNearbyPlayer() const;
+
 	void addFriend(Creature* creature);
 	void removeFriend(Creature* creature);
 	void addTarget(Creature* creature, bool pushFront = false);

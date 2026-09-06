@@ -91,6 +91,26 @@ bool Monster::canSee(const Position& pos) const
 	return Creature::canSee(getPosition(), pos, Map::maxClientViewportX + 1, Map::maxClientViewportX + 1);
 }
 
+bool Monster::hasNearbyPlayer() const
+{
+	const Position& myPos = getPosition();
+	for (const auto& [playerID, player] : g_game.getPlayers()) {
+		if (player->isRemoved() || player->isDead()) {
+			continue;
+		}
+		const Position& pos = player->getPosition();
+		if (pos.z != myPos.z) {
+			continue;
+		}
+		int32_t dx = std::abs(myPos.x - pos.x);
+		int32_t dy = std::abs(myPos.y - pos.y);
+		if (dx <= 15 && dy <= 15) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool Monster::canWalkOnFieldType(CombatType_t combatType) const
 {
 	switch (combatType) {
@@ -230,6 +250,10 @@ void Monster::onCreatureMove(Creature* creature, const Tile* newTile, const Posi
 		updateTargetList();
 		updateIdleStatus();
 	} else {
+		if (creature->getPosition().z != position.z) {
+			return;
+		}
+
 		bool canSeeNewPos = canSee(newPos);
 		bool canSeeOldPos = canSee(oldPos);
 
@@ -676,9 +700,10 @@ void Monster::updateIdleStatus()
 {
 	bool idle = false;
 	if (!isSummon() && targetList.empty()) {
-		// check if there are aggressive conditions
-		idle = std::find_if(conditions.begin(), conditions.end(),
-		                    [](Condition* condition) { return condition->isAggressive(); }) == conditions.end();
+		if (!hasNearbyPlayer()) {
+			idle = std::find_if(conditions.begin(), conditions.end(),
+			                    [](Condition* condition) { return condition->isAggressive(); }) == conditions.end();
+		}
 	}
 
 	setIdle(idle);
@@ -743,36 +768,35 @@ void Monster::onThink(uint32_t interval)
 		updateIdleStatus();
 
 		if (!isIdle) {
-			addEventWalk();
+			if (isSummon() || hasNearbyPlayer()) {
+				addEventWalk();
 
-			if (isSummon()) {
-				if (!attackedCreature) {
-					if (getMaster() && getMaster()->getAttackedCreature()) {
-						// This happens if the monster is summoned during combat
-						selectTarget(getMaster()->getAttackedCreature());
-					} else if (getMaster() != followCreature) {
-						// Our master has not ordered us to attack anything, lets follow him around instead.
-						setFollowCreature(getMaster());
+				if (isSummon()) {
+					if (!attackedCreature) {
+						if (getMaster() && getMaster()->getAttackedCreature()) {
+							selectTarget(getMaster()->getAttackedCreature());
+						} else if (getMaster() != followCreature) {
+							setFollowCreature(getMaster());
+						}
+					} else if (attackedCreature == this) {
+						setFollowCreature(nullptr);
+					} else if (followCreature != attackedCreature) {
+						setFollowCreature(attackedCreature);
 					}
-				} else if (attackedCreature == this) {
-					setFollowCreature(nullptr);
-				} else if (followCreature != attackedCreature) {
-					// This happens just after a master orders an attack, so lets follow it as well.
-					setFollowCreature(attackedCreature);
-				}
-			} else if (!targetList.empty()) {
-				if (!followCreature || !hasFollowPath) {
-					searchTarget();
-				} else if (isFleeing()) {
-					if (attackedCreature && !canUseAttack(getPosition(), attackedCreature)) {
-						searchTarget(TARGETSEARCH_ATTACKRANGE);
+				} else if (!targetList.empty()) {
+					if (!followCreature || !hasFollowPath) {
+						searchTarget();
+					} else if (isFleeing()) {
+						if (attackedCreature && !canUseAttack(getPosition(), attackedCreature)) {
+							searchTarget(TARGETSEARCH_ATTACKRANGE);
+						}
 					}
 				}
+
+				onThinkTarget(interval);
+				onThinkYell(interval);
+				onThinkDefense(interval);
 			}
-
-			onThinkTarget(interval);
-			onThinkYell(interval);
-			onThinkDefense(interval);
 		}
 	}
 }
