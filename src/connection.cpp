@@ -13,6 +13,8 @@
 
 namespace {
 constexpr uint32_t MAX_CONNECTIONS_PER_IP = 3;
+constexpr uint32_t MAX_GLOBAL_CONNECTIONS = 2000;
+constexpr uint32_t MAX_NEW_CONNECTIONS_PER_SECOND = 20;
 } // namespace
 
 Connection_ptr ConnectionManager::createConnection(boost::asio::io_service& io_service,
@@ -20,11 +22,26 @@ Connection_ptr ConnectionManager::createConnection(boost::asio::io_service& io_s
 {
 	std::lock_guard<std::mutex> lockClass(connectionManagerLock);
 
+	// Global connection limit — prevents server overload from volumetric DDoS
+	if (connections.size() >= MAX_GLOBAL_CONNECTIONS) {
+		std::cout << "Connection rejected: global connection limit reached ("
+		          << connections.size() << "/" << MAX_GLOBAL_CONNECTIONS << ")" << std::endl;
+		return nullptr;
+	}
+
 	auto connection = std::make_shared<Connection>(io_service, servicePort);
 
 	// Per-IP connection limit (anti-WPE / anti-DDoS)
 	if (connection->lastIp != 0 && ipConnectionCount[connection->lastIp] > MAX_CONNECTIONS_PER_IP) {
 		std::cout << "Connection rejected: too many connections from IP "
+		          << convertIPToString(connection->lastIp) << std::endl;
+		connection->close(Connection::FORCE_CLOSE);
+		return nullptr;
+	}
+
+	// Per-IP connection rate limit — blocks IPs opening connections too fast
+	if (connection->lastIp != 0 && !isConnectionRateAllowed(connection->lastIp)) {
+		std::cout << "Connection rejected: rate limit exceeded for IP "
 		          << convertIPToString(connection->lastIp) << std::endl;
 		connection->close(Connection::FORCE_CLOSE);
 		return nullptr;
@@ -70,6 +87,36 @@ void ConnectionManager::untrackIP(uint32_t ip)
 	}
 }
 
+bool ConnectionManager::isConnectionRateAllowed(uint32_t ip)
+{
+	auto now = static_cast<uint64_t>(OTSYS_TIME());
+	auto& timestamps = connectionRateMap[ip];
+
+	// Remove timestamps older than 1 second
+	while (!timestamps.empty() && timestamps.front() <= now - 1000) {
+		timestamps.erase(timestamps.begin());
+	}
+
+	if (timestamps.size() >= MAX_NEW_CONNECTIONS_PER_SECOND) {
+		return false;
+	}
+
+	timestamps.push_back(now);
+	return true;
+}
+
+uint32_t ConnectionManager::getConnectionCount() const
+{
+	std::lock_guard<std::mutex> lockClass(connectionManagerLock);
+	return static_cast<uint32_t>(connections.size());
+}
+
+bool ConnectionManager::isGlobalConnectionLimitReached() const
+{
+	std::lock_guard<std::mutex> lockClass(connectionManagerLock);
+	return connections.size() >= MAX_GLOBAL_CONNECTIONS;
+}
+
 void ConnectionManager::closeAll()
 {
 	std::lock_guard<std::mutex> lockClass(connectionManagerLock);
@@ -109,6 +156,11 @@ void Connection::close(bool force)
 	}
 }
 
+void Connection::markAuthenticated()
+{
+	authenticated = true;
+}
+
 void Connection::closeSocket()
 {
 	if (socket.is_open()) {
@@ -144,7 +196,9 @@ void Connection::accept()
 {
 	std::lock_guard<std::recursive_mutex> lockClass(connectionLock);
 	try {
-		readTimer.expires_from_now(std::chrono::seconds(CONNECTION_READ_TIMEOUT));
+		// Slowloris protection: unauth'd connections get shorter timeout
+		int32_t timeout = authenticated ? CONNECTION_READ_TIMEOUT : CONNECTION_UNAUTHENTICATED_TIMEOUT;
+		readTimer.expires_from_now(std::chrono::seconds(timeout));
 		readTimer.async_wait(
 		    [thisPtr = std::weak_ptr<Connection>(shared_from_this())](const boost::system::error_code& error) {
 			    Connection::handleTimeout(thisPtr, error);
@@ -193,7 +247,8 @@ void Connection::parseHeader(const boost::system::error_code& error)
 	}
 
 	try {
-		readTimer.expires_from_now(std::chrono::seconds(CONNECTION_READ_TIMEOUT));
+		int32_t timeout = authenticated ? CONNECTION_READ_TIMEOUT : CONNECTION_UNAUTHENTICATED_TIMEOUT;
+		readTimer.expires_from_now(std::chrono::seconds(timeout));
 		readTimer.async_wait(
 		    [thisPtr = std::weak_ptr<Connection>(shared_from_this())](const boost::system::error_code& error) {
 			    Connection::handleTimeout(thisPtr, error);
@@ -261,7 +316,8 @@ void Connection::parsePacket(const boost::system::error_code& error)
 	}
 
 	try {
-		readTimer.expires_from_now(std::chrono::seconds(CONNECTION_READ_TIMEOUT));
+		int32_t timeout = authenticated ? CONNECTION_READ_TIMEOUT : CONNECTION_UNAUTHENTICATED_TIMEOUT;
+		readTimer.expires_from_now(std::chrono::seconds(timeout));
 		readTimer.async_wait(
 		    [thisPtr = std::weak_ptr<Connection>(shared_from_this())](const boost::system::error_code& error) {
 			    Connection::handleTimeout(thisPtr, error);

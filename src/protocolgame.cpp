@@ -469,6 +469,11 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 		return;
 	}
 
+	// Challenge passed — mark connection as authenticated (slowloris protection)
+	if (auto connection = getConnection()) {
+		connection->markAuthenticated();
+	}
+
 	// OTCv8 detect
 	const auto otcv8StrLen = msg.get<uint16_t>();
 	if (otcv8StrLen == OTCV8_LENGTH && msg.getString(OTCV8_LENGTH) == OTCV8_NAME) {

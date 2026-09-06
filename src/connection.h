@@ -7,9 +7,11 @@
 #include "networkmessage.h"
 
 #include <unordered_set>
+#include <unordered_map>
 
 inline constexpr int32_t CONNECTION_WRITE_TIMEOUT = 30;
 inline constexpr int32_t CONNECTION_READ_TIMEOUT = 30;
+inline constexpr int32_t CONNECTION_UNAUTHENTICATED_TIMEOUT = 10;
 
 class Protocol;
 using Protocol_ptr = std::shared_ptr<Protocol>;
@@ -39,6 +41,9 @@ public:
 	bool isIPAllowed(uint32_t ip) const;
 	void trackIP(uint32_t ip);
 	void untrackIP(uint32_t ip);
+	bool isConnectionRateAllowed(uint32_t ip);
+	uint32_t getConnectionCount() const;
+	bool isGlobalConnectionLimitReached() const;
 
 private:
 	ConnectionManager() = default;
@@ -46,6 +51,7 @@ private:
 	std::unordered_set<Connection_ptr> connections;
 	mutable std::mutex connectionManagerLock;
 	std::unordered_map<uint32_t, uint32_t> ipConnectionCount;
+	std::unordered_map<uint32_t, std::vector<uint64_t>> connectionRateMap;
 };
 
 class Connection : public std::enable_shared_from_this<Connection>
@@ -89,6 +95,8 @@ public:
 
 	uint32_t getIP();
 	uint32_t getLastIp() const { return lastIp; }
+	void markAuthenticated();
+	bool isAuthenticated() const { return authenticated; }
 
 private:
 	void parseHeader(const boost::system::error_code& error);
@@ -124,6 +132,7 @@ private:
 
 	bool closed = false;
 	bool receivedFirst = false;
+	bool authenticated = false;
 };
 
 #endif

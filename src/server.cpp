@@ -71,6 +71,11 @@ void ServicePort::accept()
 	}
 
 	auto connection = ConnectionManager::getInstance().createConnection(io_service, shared_from_this());
+	if (!connection) {
+		// Connection rejected (rate limit / global limit) — accept next one
+		accept();
+		return;
+	}
 	acceptor->async_accept(connection->getSocket(),
 	                       [=, thisPtr = shared_from_this()](const boost::system::error_code& error) {
 		                       thisPtr->onAccept(connection, error);
@@ -154,6 +159,7 @@ void ServicePort::open(uint16_t port)
 		}
 
 		acceptor->set_option(boost::asio::ip::tcp::no_delay(true));
+		acceptor->set_option(boost::asio::socket_base::max_connections(128));
 
 		accept();
 	} catch (boost::system::system_error& e) {

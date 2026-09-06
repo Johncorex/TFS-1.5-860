@@ -111,6 +111,11 @@ void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 	enableXTEAEncryption();
 	setXTEAKey(std::move(key));
 
+	// RSA decrypted successfully — mark as authenticated (slowloris protection)
+	if (auto connection = getConnection()) {
+		connection->markAuthenticated();
+	}
+
 	if (version < CLIENT_VERSION_MIN || version > CLIENT_VERSION_MAX) {
 		disconnectClient(fmt::format("Only clients with protocol {:s} allowed!", CLIENT_VERSION_STR));
 		return;
