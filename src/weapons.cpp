@@ -341,6 +341,7 @@ bool Weapon::useFist(Player* player, Creature* target)
 
 void Weapon::internalUseWeapon(Player* player, Item* item, Creature* target, int32_t damageModifier) const
 {
+	Tile* targetTile = target->getTile();
 	if (scripted) {
 		LuaVariant var;
 		var.setNumber(target->getID());
@@ -362,7 +363,7 @@ void Weapon::internalUseWeapon(Player* player, Item* item, Creature* target, int
 		Combat::doTargetCombat(player, target, damage, params);
 	}
 
-	onUsedWeapon(player, item, target->getTile());
+	onUsedWeapon(player, item, targetTile);
 }
 
 void Weapon::internalUseWeapon(Player* player, Item* item, Tile* tile) const

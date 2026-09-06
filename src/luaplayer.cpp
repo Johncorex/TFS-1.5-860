@@ -678,12 +678,19 @@ int luaPlayerGetVocation(lua_State* L)
 {
 	// player:getVocation()
 	const Player* player = getUserdata<const Player>(L, 1);
-	if (player) {
-		pushUserdata<Vocation>(L, player->getVocation());
-		setMetatable(L, -1, "Vocation");
-	} else {
+	if (!player) {
 		lua_pushnil(L);
+		return 1;
 	}
+
+	const Vocation* vocation = player->getVocation();
+	if (!vocation) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	pushUserdata<Vocation>(L, vocation);
+	setMetatable(L, -1, "Vocation");
 	return 1;
 }
 
@@ -751,12 +758,19 @@ int luaPlayerGetTown(lua_State* L)
 {
 	// player:getTown()
 	const Player* player = getUserdata<const Player>(L, 1);
-	if (player) {
-		pushUserdata<Town>(L, player->getTown());
-		setMetatable(L, -1, "Town");
-	} else {
+	if (!player) {
 		lua_pushnil(L);
+		return 1;
 	}
+
+	const Town* town = player->getTown();
+	if (!town) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	pushUserdata<Town>(L, town);
+	setMetatable(L, -1, "Town");
 	return 1;
 }
 
@@ -881,12 +895,19 @@ int luaPlayerGetGroup(lua_State* L)
 {
 	// player:getGroup()
 	const Player* player = getUserdata<const Player>(L, 1);
-	if (player) {
-		pushUserdata<Group>(L, player->getGroup());
-		setMetatable(L, -1, "Group");
-	} else {
+	if (!player) {
 		lua_pushnil(L);
+		return 1;
 	}
+
+	const Group* group = player->getGroup();
+	if (!group) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	pushUserdata<Group>(L, group);
+	setMetatable(L, -1, "Group");
 	return 1;
 }
 

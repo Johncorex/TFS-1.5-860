@@ -665,6 +665,9 @@ uint32_t MoveEvent::AddItemField(Item* item, Item*, const Position&)
 {
 	if (MagicField* field = item->getMagicField()) {
 		Tile* tile = item->getTile();
+		if (!tile) {
+			return 1;
+		}
 		if (CreatureVector* creatures = tile->getCreatures()) {
 			for (Creature* creature : *creatures) {
 				field->onStepInField(creature);

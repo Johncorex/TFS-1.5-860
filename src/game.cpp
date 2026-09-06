@@ -1587,6 +1587,10 @@ bool Game::removeMoney(Cylinder* cylinder, uint64_t money, uint32_t flags /*= 0*
 			internalRemoveItem(item);
 			money -= moneyEntry.first;
 		} else if (moneyEntry.first > money) {
+			if (item->getItemCount() == 0) {
+				internalRemoveItem(item);
+				break;
+			}
 			const uint32_t worth = moneyEntry.first / item->getItemCount();
 			const uint32_t removeCount = std::ceil(money / static_cast<double>(worth));
 
@@ -4021,8 +4025,10 @@ void Game::combatGetTypeInfo(CombatType_t combatType, Creature* target, TextColo
 			}
 
 			if (splash) {
-				internalAddItem(target->getTile(), splash, INDEX_WHEREEVER, FLAG_NOLIMIT);
-				startDecay(splash);
+				if (Tile* tile = target->getTile()) {
+					internalAddItem(tile, splash, INDEX_WHEREEVER, FLAG_NOLIMIT);
+					startDecay(splash);
+				}
 			}
 
 			break;
@@ -4249,13 +4255,13 @@ bool Game::combatChangeHealth(Creature* attacker, Creature* target, CombatDamage
 					} else {
 						message.type = MESSAGE_STATUS_DEFAULT;
 						if (spectatorMessage.empty()) {
-							if (!attacker) {
-								spectatorMessage =
-								    fmt::format("{:s} loses {:d} mana.", target->getNameDescription(), manaDamage);
-							} else if (attacker == target) {
-								spectatorMessage = fmt::format(
-								    "{:s} loses {:d} mana due to {:s} own attack.", target->getNameDescription(),
-								    manaDamage, targetPlayer->getSex() == PLAYERSEX_FEMALE ? "her" : "his");
+						if (!attacker) {
+							spectatorMessage =
+							    fmt::format("{:s} loses {:d} mana.", target->getNameDescription(), manaDamage);
+						} else if (attacker == target) {
+							spectatorMessage = fmt::format(
+							    "{:s} loses {:d} mana due to {:s} own attack.", target->getNameDescription(),
+							    manaDamage, targetPlayer && targetPlayer->getSex() == PLAYERSEX_FEMALE ? "her" : "his");
 							} else {
 								spectatorMessage = fmt::format("{:s} loses {:d} mana due to an attack by {:s}.",
 								                               target->getNameDescription(), manaDamage,
