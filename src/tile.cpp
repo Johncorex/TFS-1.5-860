@@ -628,8 +628,9 @@ ReturnValue Tile::queryAdd(int32_t, const Thing& thing, uint32_t, uint32_t flags
 		}
 
 		if (itemIsHangable && hasFlag(TILESTATE_SUPPORTS_HANGABLE)) {
-			if (items) {
-				for (const Item* tileItem : *items) {
+			const TileItemVector* tileItems = getItemList();
+			if (tileItems) {
+				for (const Item* tileItem : *tileItems) {
 					if (tileItem->isHangable()) {
 						return RETURNVALUE_NEEDEXCHANGE;
 					}
@@ -651,26 +652,27 @@ ReturnValue Tile::queryAdd(int32_t, const Thing& thing, uint32_t, uint32_t flags
 				}
 			}
 
-			if (items) {
-				for (const Item* tileItem : *items) {
-					const ItemType& iiType = Item::items[tileItem->getID()];
-					if (!iiType.blockSolid) {
-						continue;
-					}
+		const TileItemVector* tileItems2 = getItemList();
+		if (tileItems2) {
+			for (const Item* tileItem : *tileItems2) {
+				const ItemType& iiType = Item::items[tileItem->getID()];
+				if (!iiType.blockSolid) {
+					continue;
+				}
 
-					if (iiType.allowPickupable && !item->isMagicField() && !item->isBlocking()) {
-						continue;
-					}
+				if (iiType.allowPickupable && !item->isMagicField() && !item->isBlocking()) {
+					continue;
+				}
 
-					if (!item->isPickupable()) {
-						return RETURNVALUE_NOTENOUGHROOM;
-					}
+				if (!item->isPickupable()) {
+					return RETURNVALUE_NOTENOUGHROOM;
+				}
 
-					if (!iiType.hasHeight || iiType.pickupable || iiType.isBed()) {
-						return RETURNVALUE_NOTENOUGHROOM;
-					}
+				if (!iiType.hasHeight || iiType.pickupable || iiType.isBed()) {
+					return RETURNVALUE_NOTENOUGHROOM;
 				}
 			}
+		}
 		}
 	}
 	return RETURNVALUE_NOERROR;

@@ -689,7 +689,7 @@ int luaPlayerGetVocation(lua_State* L)
 		return 1;
 	}
 
-	pushUserdata<Vocation>(L, vocation);
+	pushUserdata<Vocation>(L, const_cast<Vocation*>(vocation));
 	setMetatable(L, -1, "Vocation");
 	return 1;
 }
@@ -769,7 +769,7 @@ int luaPlayerGetTown(lua_State* L)
 		return 1;
 	}
 
-	pushUserdata<Town>(L, town);
+	pushUserdata<Town>(L, const_cast<Town*>(town));
 	setMetatable(L, -1, "Town");
 	return 1;
 }
@@ -906,7 +906,7 @@ int luaPlayerGetGroup(lua_State* L)
 		return 1;
 	}
 
-	pushUserdata<Group>(L, group);
+	pushUserdata<Group>(L, const_cast<Group*>(group));
 	setMetatable(L, -1, "Group");
 	return 1;
 }

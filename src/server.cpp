@@ -159,7 +159,6 @@ void ServicePort::open(uint16_t port)
 		}
 
 		acceptor->set_option(boost::asio::ip::tcp::no_delay(true));
-		acceptor->set_option(boost::asio::socket_base::max_connections(128));
 
 		accept();
 	} catch (boost::system::system_error& e) {

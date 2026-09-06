@@ -4255,13 +4255,13 @@ bool Game::combatChangeHealth(Creature* attacker, Creature* target, CombatDamage
 					} else {
 						message.type = MESSAGE_STATUS_DEFAULT;
 						if (spectatorMessage.empty()) {
-						if (!attacker) {
-							spectatorMessage =
-							    fmt::format("{:s} loses {:d} mana.", target->getNameDescription(), manaDamage);
-						} else if (attacker == target) {
-							spectatorMessage = fmt::format(
-							    "{:s} loses {:d} mana due to {:s} own attack.", target->getNameDescription(),
-							    manaDamage, targetPlayer && targetPlayer->getSex() == PLAYERSEX_FEMALE ? "her" : "his");
+							if (!attacker) {
+								spectatorMessage =
+								    fmt::format("{:s} loses {:d} mana.", target->getNameDescription(), manaDamage);
+							} else if (attacker == target) {
+								spectatorMessage = fmt::format(
+								    "{:s} loses {:d} mana due to {:s} own attack.", target->getNameDescription(),
+								    manaDamage, targetPlayer && targetPlayer->getSex() == PLAYERSEX_FEMALE ? "her" : "his");
 							} else {
 								spectatorMessage = fmt::format("{:s} loses {:d} mana due to an attack by {:s}.",
 								                               target->getNameDescription(), manaDamage,
