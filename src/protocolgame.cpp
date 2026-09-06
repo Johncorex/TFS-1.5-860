@@ -114,6 +114,111 @@ std::size_t clientLogin(const Player& player)
 	return currentSlot;
 }
 
+// Action cooldown lookup table: opcode -> cooldown in ms (0 = no cooldown)
+// Groups: Look=200, Trade=200, Outfit=200, MoveItem=200, UseItem=200,
+//         Say=200, Attack=200, Channel=200, Shop=200, NPC=500, Misc=200
+constexpr int64_t ACTION_COOLDOWN_MS = 200;
+constexpr int64_t NPC_TALK_COOLDOWN_MS = 500;
+
+int64_t getPacketCooldown(uint8_t opcode)
+{
+	switch (opcode) {
+		// Look actions (200ms)
+		case 0x8C: // look at
+		case 0x8D: // look in battle list
+		case 0x7E: // look in trade
+		case 0x79: // look in shop
+			return ACTION_COOLDOWN_MS;
+
+		// Trade actions (200ms)
+		case 0x7D: // request trade
+		case 0x7F: // accept trade
+		case 0x80: // close trade
+			return ACTION_COOLDOWN_MS;
+
+		// Outfit actions (200ms)
+		case 0xD3: // set outfit
+		case 0xD2: // request outfit
+			return ACTION_COOLDOWN_MS;
+
+		// Move item (200ms)
+		case 0x78: // throw (move item)
+			return ACTION_COOLDOWN_MS;
+
+		// Use item actions (200ms)
+		case 0x82: // use item
+		case 0x83: // use item ex
+		case 0x84: // use with creature
+		case 0x85: // rotate item
+			return ACTION_COOLDOWN_MS;
+
+		// Say / NPC talk (200ms general, NPC check done separately)
+		case 0x96: // say
+			return ACTION_COOLDOWN_MS;
+
+		// Attack / Follow (200ms)
+		case 0xA1: // attack
+		case 0xA2: // follow
+		case 0xBE: // cancel attack/follow
+			return ACTION_COOLDOWN_MS;
+
+		// Channel actions (200ms)
+		case 0x97: // request channels
+		case 0x98: // open channel
+		case 0x99: // close channel
+		case 0x9A: // open private channel
+		case 0x9E: // close npc channel
+		case 0xAB: // channel invite
+		case 0xAC: // channel exclude
+		case 0xAA: // create private channel
+			return ACTION_COOLDOWN_MS;
+
+		// Shop actions (200ms)
+		case 0x7A: // purchase
+		case 0x7B: // sale
+		case 0x7C: // close shop
+			return ACTION_COOLDOWN_MS;
+
+		// Container actions (200ms)
+		case 0x87: // close container
+		case 0x88: // up arrow container
+		case 0xCA: // update container
+			return ACTION_COOLDOWN_MS;
+
+		// VIP actions (200ms)
+		case 0xDC: // add vip
+		case 0xDD: // remove vip
+			return ACTION_COOLDOWN_MS;
+
+		// Party actions (200ms)
+		case 0xA3: // invite to party
+		case 0xA4: // join party
+		case 0xA5: // revoke party invite
+		case 0xA6: // pass party leadership
+		case 0xA7: // leave party
+		case 0xA8: // enable shared party exp
+			return ACTION_COOLDOWN_MS;
+
+		// Window actions (200ms)
+		case 0x89: // text window
+		case 0x8A: // house window
+			return ACTION_COOLDOWN_MS;
+
+		// Report actions (200ms)
+		case 0xE6: // bug report
+		case 0xF2: // rule violation report
+			return ACTION_COOLDOWN_MS;
+
+		// Modal window (200ms)
+		case 0xF9: // modal window answer
+			return ACTION_COOLDOWN_MS;
+
+		// Actions with no cooldown (movement, ping, etc.)
+		default:
+			return 0;
+	}
+}
+
 } // namespace
 
 void ProtocolGame::release()
@@ -493,6 +598,13 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 			return;
 		}
 	}
+
+	// Action cooldown check (anti-spam)
+	int64_t cooldown = getPacketCooldown(recvbyte);
+	if (cooldown > 0 && !player->canPerformAction(cooldown)) {
+		return;
+	}
+	player->setLastActionTime();
 
 	// Account Manager
 	if (player->isAccountManager()) {
@@ -1139,6 +1251,16 @@ void ProtocolGame::parseSay(NetworkMessage& msg)
 	uint16_t channelId;
 
 	SpeakClasses type = static_cast<SpeakClasses>(msg.getByte());
+
+	// NPC talk cooldown (500ms for TALKTYPE_SAY which triggers NPC responses)
+	if (type == TALKTYPE_SAY) {
+		int64_t now = OTSYS_TIME();
+		if (now - player->getLastNpcTalkTime() < NPC_TALK_COOLDOWN_MS) {
+			return;
+		}
+		player->setLastNpcTalkTime(now);
+	}
+
 	switch (type) {
 		case TALKTYPE_PRIVATE:
 		case TALKTYPE_PRIVATE_RED:

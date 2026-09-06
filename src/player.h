@@ -922,6 +922,11 @@ public:
 	bool canDoAction() const { return nextAction <= OTSYS_TIME(); }
 	uint32_t getNextActionTime() const;
 
+	bool canPerformAction(int64_t cooldown) const { return OTSYS_TIME() >= lastActionTime + cooldown; }
+	void setLastActionTime() { lastActionTime = OTSYS_TIME(); }
+	int64_t getLastNpcTalkTime() const { return lastNpcTalkTime; }
+	void setLastNpcTalkTime(int64_t time) { lastNpcTalkTime = time; }
+
 	Item* getWriteItem(uint32_t& windowTextId, uint16_t& maxWriteLen);
 	void setWriteItem(Item* item, uint16_t maxWriteLen = 0);
 
@@ -1063,6 +1068,8 @@ private:
 	int64_t lastPing;
 	int64_t lastPong;
 	int64_t nextAction = 0;
+	int64_t lastActionTime = 0;
+	int64_t lastNpcTalkTime = 0;
 
 	uint32_t lastIP = 0;
 	BedItem* bedItem = nullptr;
