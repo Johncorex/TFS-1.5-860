@@ -4280,6 +4280,7 @@ bool Game::combatChangeHealth(Creature* attacker, Creature* target, CombatDamage
 				}
 			}
 		}
+		}
 
 		int32_t realDamage = damage.primary.value + damage.secondary.value;
 		if (realDamage == 0) {
