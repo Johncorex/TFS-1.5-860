@@ -309,10 +309,15 @@ ReturnValue Combat::canDoCombat(Creature* attacker, Creature* target)
 
 			// nopvp-zone
 			const Tile* targetPlayerTile = targetPlayer->getTile();
+			if (!targetPlayerTile) {
+				return RETURNVALUE_NOTPOSSIBLE;
+			}
 			if (targetPlayerTile->hasFlag(TILESTATE_NOPVPZONE)) {
 				return RETURNVALUE_ACTIONNOTPERMITTEDINANOPVPZONE;
-			} else if (attackerPlayer->getTile()->hasFlag(TILESTATE_NOPVPZONE) &&
-			           !targetPlayerTile->hasFlag(TILESTATE_NOPVPZONE | TILESTATE_PROTECTIONZONE)) {
+			}
+			const Tile* attackerPlayerTile = attackerPlayer->getTile();
+			if (attackerPlayerTile && attackerPlayerTile->hasFlag(TILESTATE_NOPVPZONE) &&
+			    !targetPlayerTile->hasFlag(TILESTATE_NOPVPZONE | TILESTATE_PROTECTIONZONE)) {
 				return RETURNVALUE_ACTIONNOTPERMITTEDINANOPVPZONE;
 			}
 		}
@@ -325,7 +330,8 @@ ReturnValue Combat::canDoCombat(Creature* attacker, Creature* target)
 					return RETURNVALUE_YOUMAYNOTATTACKTHISPLAYER;
 				}
 
-				if (targetPlayer->getTile()->hasFlag(TILESTATE_NOPVPZONE)) {
+				const Tile* masterTargetTile = targetPlayer->getTile();
+				if (masterTargetTile && masterTargetTile->hasFlag(TILESTATE_NOPVPZONE)) {
 					return RETURNVALUE_ACTIONNOTPERMITTEDINANOPVPZONE;
 				}
 

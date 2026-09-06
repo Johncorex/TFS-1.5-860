@@ -259,7 +259,11 @@ bool Map::placeCreature(const Position& centerPos, Creature* creature, bool exte
 
 void Map::moveCreature(Creature& creature, Tile& newTile, bool forceTeleport /* = false*/)
 {
-	Tile& oldTile = *creature.getTile();
+	Tile* tilePtr = creature.getTile();
+	if (!tilePtr) {
+		return;
+	}
+	Tile& oldTile = *tilePtr;
 
 	// If the tile does not have the creature it means that the creature is ready for elimination, we skip the move.
 	if (!oldTile.hasCreature(&creature)) {

@@ -750,6 +750,9 @@ bool Creature::dropCorpse(Creature* lastHitCreature, Creature* mostDamageCreatur
 		}
 
 		Tile* tile = getTile();
+		if (!tile) {
+			return false;
+		}
 
 		if (splash) {
 			g_game.internalAddItem(tile, splash, INDEX_WHEREEVER, FLAG_NOLIMIT);
@@ -1081,7 +1084,13 @@ void Creature::onEndCondition(ConditionType_t)
 
 void Creature::onTickCondition(ConditionType_t type, bool& bRemove)
 {
-	const MagicField* field = getTile()->getFieldItem();
+	Tile* tile = getTile();
+	if (!tile) {
+		bRemove = true;
+		return;
+	}
+
+	const MagicField* field = tile->getFieldItem();
 	if (!field) {
 		return;
 	}
