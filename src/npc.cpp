@@ -84,7 +84,9 @@ void Npc::reload()
 	g_game.map.getSpectators(players, getPosition(), true, true);
 	for (const auto& player : players) {
 		assert(dynamic_cast<Player*>(player) != nullptr);
-		spectators.insert(static_cast<Player*>(player));
+		if (canSee(player->getPosition())) {
+			spectators.insert(static_cast<Player*>(player));
+		}
 	}
 
 	const bool hasSpectators = !spectators.empty();
@@ -226,7 +228,9 @@ void Npc::onCreatureAppear(Creature* creature, bool isLogin)
 		g_game.map.getSpectators(players, getPosition(), true, true);
 		for (const auto& player : players) {
 			assert(dynamic_cast<Player*>(player) != nullptr);
-			spectators.insert(static_cast<Player*>(player));
+			if (canSee(player->getPosition())) {
+				spectators.insert(static_cast<Player*>(player));
+			}
 		}
 
 		const bool hasSpectators = !spectators.empty();
@@ -240,6 +244,10 @@ void Npc::onCreatureAppear(Creature* creature, bool isLogin)
 			npcEventHandler->onCreatureAppear(creature);
 		}
 	} else if (Player* player = creature->getPlayer()) {
+		if (!canSee(player->getPosition())) {
+			return;
+		}
+
 		if (npcEventHandler) {
 			npcEventHandler->onCreatureAppear(creature);
 		}
@@ -281,8 +289,8 @@ void Npc::onCreatureMove(Creature* creature, const Tile* newTile, const Position
 		if (creature != this) {
 			Player* player = creature->getPlayer();
 
-			// if player is now in range, add to spectators list, otherwise erase
-			if (player->canSee(position)) {
+			// NPC checks if player is within 3 SQM on same floor
+			if (canSee(player->getPosition())) {
 				spectators.insert(player);
 			} else {
 				spectators.erase(player);
@@ -295,7 +303,7 @@ void Npc::onCreatureMove(Creature* creature, const Tile* newTile, const Position
 
 void Npc::onCreatureSay(Creature* creature, SpeakClasses type, std::string_view text)
 {
-	if (creature == this) {
+	if (creature == this || isIdle) {
 		return;
 	}
 
@@ -310,6 +318,10 @@ void Npc::onCreatureSay(Creature* creature, SpeakClasses type, std::string_view 
 
 void Npc::onPlayerCloseChannel(Player* player)
 {
+	if (isIdle) {
+		return;
+	}
+
 	if (npcEventHandler) {
 		npcEventHandler->onPlayerCloseChannel(player);
 	}
@@ -317,13 +329,17 @@ void Npc::onPlayerCloseChannel(Player* player)
 
 void Npc::onThink(uint32_t interval)
 {
+	if (isIdle) {
+		return;
+	}
+
 	Creature::onThink(interval);
 
 	if (npcEventHandler) {
 		npcEventHandler->onThink();
 	}
 
-	if (!isIdle && getTimeSinceLastMove() >= walkTicks) {
+	if (getTimeSinceLastMove() >= walkTicks) {
 		addEventWalk();
 	}
 }
@@ -341,6 +357,10 @@ void Npc::doSayToPlayer(Player* player, std::string_view text)
 void Npc::onPlayerTrade(Player* player, int32_t callback, uint16_t itemId, uint8_t count, uint8_t amount,
                         bool ignore /* = false*/, bool inBackpacks /* = false*/)
 {
+	if (isIdle) {
+		return;
+	}
+
 	if (npcEventHandler) {
 		npcEventHandler->onPlayerTrade(player, callback, itemId, count, amount, ignore, inBackpacks);
 	}
