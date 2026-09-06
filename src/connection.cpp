@@ -11,12 +11,25 @@
 #include "scheduler.h"
 #include "server.h"
 
+namespace {
+constexpr uint32_t MAX_CONNECTIONS_PER_IP = 3;
+} // namespace
+
 Connection_ptr ConnectionManager::createConnection(boost::asio::io_service& io_service,
                                                    ConstServicePort_ptr servicePort)
 {
 	std::lock_guard<std::mutex> lockClass(connectionManagerLock);
 
 	auto connection = std::make_shared<Connection>(io_service, servicePort);
+
+	// Per-IP connection limit (anti-WPE / anti-DDoS)
+	if (connection->lastIp != 0 && ipConnectionCount[connection->lastIp] > MAX_CONNECTIONS_PER_IP) {
+		std::cout << "Connection rejected: too many connections from IP "
+		          << convertIPToString(connection->lastIp) << std::endl;
+		connection->close(Connection::FORCE_CLOSE);
+		return nullptr;
+	}
+
 	connections.insert(connection);
 	return connection;
 }
@@ -26,6 +39,35 @@ void ConnectionManager::releaseConnection(const Connection_ptr& connection)
 	std::lock_guard<std::mutex> lockClass(connectionManagerLock);
 
 	connections.erase(connection);
+}
+
+bool ConnectionManager::isIPAllowed(uint32_t ip) const
+{
+	std::lock_guard<std::mutex> lockClass(connectionManagerLock);
+	auto it = ipConnectionCount.find(ip);
+	if (it == ipConnectionCount.end()) {
+		return true;
+	}
+	return it->second < MAX_CONNECTIONS_PER_IP;
+}
+
+void ConnectionManager::trackIP(uint32_t ip)
+{
+	std::lock_guard<std::mutex> lockClass(connectionManagerLock);
+	++ipConnectionCount[ip];
+}
+
+void ConnectionManager::untrackIP(uint32_t ip)
+{
+	std::lock_guard<std::mutex> lockClass(connectionManagerLock);
+	auto it = ipConnectionCount.find(ip);
+	if (it != ipConnectionCount.end()) {
+		if (it->second <= 1) {
+			ipConnectionCount.erase(it);
+		} else {
+			--it->second;
+		}
+	}
 }
 
 void ConnectionManager::closeAll()
@@ -82,7 +124,13 @@ void Connection::closeSocket()
 	}
 }
 
-Connection::~Connection() { closeSocket(); }
+Connection::~Connection()
+{
+	if (lastIp != 0) {
+		ConnectionManager::getInstance().untrackIP(lastIp);
+	}
+	closeSocket();
+}
 
 void Connection::accept(Protocol_ptr protocol)
 {

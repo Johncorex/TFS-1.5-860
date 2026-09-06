@@ -10,10 +10,43 @@
 
 extern Game g_game;
 
+namespace {
+constexpr int32_t MAX_PARCEL_ITEMS = 200;
+constexpr int32_t MAX_PARCEL_DEPTH = 5;
+
+int32_t countParcelItems(const Container* container, int32_t depth = 0)
+{
+	if (depth > MAX_PARCEL_DEPTH) {
+		return MAX_PARCEL_ITEMS + 1;
+	}
+
+	int32_t count = 0;
+	for (const Item* item : container->getItemList()) {
+		++count;
+		if (count > MAX_PARCEL_ITEMS) {
+			return count;
+		}
+		if (const Container* subContainer = item->getContainer()) {
+			count += countParcelItems(subContainer, depth + 1);
+			if (count > MAX_PARCEL_ITEMS) {
+				return count;
+			}
+		}
+	}
+	return count;
+}
+} // namespace
+
 ReturnValue Mailbox::queryAdd(int32_t, const Thing& thing, uint32_t, uint32_t, Creature*) const
 {
 	const Item* item = thing.getItem();
 	if (item && Mailbox::canSend(item)) {
+		if (const Container* container = item->getContainer()) {
+			int32_t itemCount = countParcelItems(container);
+			if (itemCount > MAX_PARCEL_ITEMS) {
+				return RETURNVALUE_NOTPOSSIBLE;
+			}
+		}
 		return RETURNVALUE_NOERROR;
 	}
 	return RETURNVALUE_NOTPOSSIBLE;
@@ -38,6 +71,11 @@ void Mailbox::addThing(int32_t, Thing* thing)
 {
 	Item* item = thing->getItem();
 	if (item && Mailbox::canSend(item)) {
+		if (const Container* container = item->getContainer()) {
+			if (countParcelItems(container) > MAX_PARCEL_ITEMS) {
+				return;
+			}
+		}
 		sendItem(item);
 	}
 }

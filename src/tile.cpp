@@ -602,9 +602,11 @@ ReturnValue Tile::queryAdd(int32_t, const Thing& thing, uint32_t, uint32_t flags
 			}
 		}
 	} else if (const Item* item = thing.getItem()) {
-		const TileItemVector* items = getItemList();
-		if (items && items->size() >= 0xFFFF) {
-			return RETURNVALUE_NOTPOSSIBLE;
+		if (!hasBitSet(FLAG_NOLIMIT, flags)) {
+			const TileItemVector* items = getItemList();
+			if (items && items->size() >= MAX_ITEMS_PER_TILE) {
+				return RETURNVALUE_NOTPOSSIBLE;
+			}
 		}
 
 		if (hasBitSet(FLAG_NOLIMIT, flags)) {
@@ -821,7 +823,7 @@ void Tile::addThing(int32_t, Thing* thing)
 		}
 
 		TileItemVector* items = getItemList();
-		if (items && items->size() >= 0xFFFF) {
+		if (items && items->size() >= MAX_ITEMS_PER_TILE) {
 			return /*RETURNVALUE_NOTPOSSIBLE*/;
 		}
 

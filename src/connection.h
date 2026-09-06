@@ -36,12 +36,16 @@ public:
 	Connection_ptr createConnection(boost::asio::io_service& io_service, ConstServicePort_ptr servicePort);
 	void releaseConnection(const Connection_ptr& connection);
 	void closeAll();
+	bool isIPAllowed(uint32_t ip) const;
+	void trackIP(uint32_t ip);
+	void untrackIP(uint32_t ip);
 
 private:
 	ConnectionManager() = default;
 
 	std::unordered_set<Connection_ptr> connections;
-	std::mutex connectionManagerLock;
+	mutable std::mutex connectionManagerLock;
+	std::unordered_map<uint32_t, uint32_t> ipConnectionCount;
 };
 
 class Connection : public std::enable_shared_from_this<Connection>
@@ -62,7 +66,16 @@ public:
 	    service_port(std::move(service_port)),
 	    socket(io_service),
 	    timeConnected(time(nullptr))
-	{}
+	{
+		try {
+			lastIp = socket.remote_endpoint().address().to_v4().to_uint();
+		} catch (...) {
+			lastIp = 0;
+		}
+		if (lastIp != 0) {
+			ConnectionManager::getInstance().trackIP(lastIp);
+		}
+	}
 	~Connection();
 
 	friend class ConnectionManager;

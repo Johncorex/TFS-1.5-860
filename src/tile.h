@@ -21,6 +21,7 @@ using CreatureVector = std::vector<Creature*>;
 using ItemVector = std::vector<Item*>;
 
 inline constexpr int32_t MAX_STACKPOS_THINGS = 10;
+inline constexpr int32_t MAX_ITEMS_PER_TILE = 100;
 
 enum tileflags_t : uint32_t
 {
