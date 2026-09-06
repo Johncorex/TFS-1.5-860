@@ -548,37 +548,21 @@ void Combat::combatTileEffects(const SpectatorVec& spectators, Creature* caster,
 {
 	if (params.itemId != 0) {
 		uint16_t itemId = params.itemId;
-		switch (itemId) {
-			case ITEM_FIREFIELD_PERSISTENT_FULL:
-				itemId = ITEM_FIREFIELD_PVP_FULL;
-				break;
 
-			case ITEM_FIREFIELD_PERSISTENT_MEDIUM:
-				itemId = ITEM_FIREFIELD_PVP_MEDIUM;
-				break;
+		// Precomputed field item ID mapping (avoids repeated switch)
+		static const std::unordered_map<uint16_t, uint16_t> persistentToPvp = {
+		    {ITEM_FIREFIELD_PERSISTENT_FULL, ITEM_FIREFIELD_PVP_FULL},
+		    {ITEM_FIREFIELD_PERSISTENT_MEDIUM, ITEM_FIREFIELD_PVP_MEDIUM},
+		    {ITEM_FIREFIELD_PERSISTENT_SMALL, ITEM_FIREFIELD_PVP_SMALL},
+		    {ITEM_ENERGYFIELD_PERSISTENT, ITEM_ENERGYFIELD_PVP},
+		    {ITEM_POISONFIELD_PERSISTENT, ITEM_POISONFIELD_PVP},
+		    {ITEM_MAGICWALL_PERSISTENT, ITEM_MAGICWALL},
+		    {ITEM_WILDGROWTH_PERSISTENT, ITEM_WILDGROWTH},
+		};
 
-			case ITEM_FIREFIELD_PERSISTENT_SMALL:
-				itemId = ITEM_FIREFIELD_PVP_SMALL;
-				break;
-
-			case ITEM_ENERGYFIELD_PERSISTENT:
-				itemId = ITEM_ENERGYFIELD_PVP;
-				break;
-
-			case ITEM_POISONFIELD_PERSISTENT:
-				itemId = ITEM_POISONFIELD_PVP;
-				break;
-
-			case ITEM_MAGICWALL_PERSISTENT:
-				itemId = ITEM_MAGICWALL;
-				break;
-
-			case ITEM_WILDGROWTH_PERSISTENT:
-				itemId = ITEM_WILDGROWTH;
-				break;
-
-			default:
-				break;
+		auto mapIt = persistentToPvp.find(itemId);
+		if (mapIt != persistentToPvp.end()) {
+			itemId = mapIt->second;
 		}
 
 	if (caster) {
@@ -688,7 +672,7 @@ void Combat::doCombat(Creature* caster, Creature* target) const
 			SpectatorVec spectators;
 			g_game.map.getSpectators(spectators, target->getPosition(), true, true);
 
-			if (params.origin != ORIGIN_MELEE) {
+			if (params.origin != ORIGIN_MELEE && !params.conditionList.empty()) {
 				for (const auto& condition : params.conditionList) {
 					if (caster == target || !target->isImmune(condition->getType())) {
 						Condition* conditionCopy = condition->clone();
@@ -733,6 +717,10 @@ void Combat::doCombat(Creature* caster, const Position& position) const
 		auto tiles = caster ? getCombatArea(caster->getPosition(), position, area.get())
 		                    : getCombatArea(position, position, area.get());
 
+		if (tiles.empty()) {
+			return;
+		}
+
 		SpectatorVec spectators;
 		int32_t maxX = 0;
 		int32_t maxY = 0;
@@ -773,15 +761,17 @@ void Combat::doCombat(Creature* caster, const Position& position) const
 
 					if (!params.aggressive ||
 					    (caster != creature && Combat::canDoCombat(caster, creature) == RETURNVALUE_NOERROR)) {
-						for (const auto& condition : params.conditionList) {
-							if (caster == creature || !creature->isImmune(condition->getType())) {
-								Condition* conditionCopy = condition->clone();
-								if (caster) {
-									conditionCopy->setParam(CONDITION_PARAM_OWNER, caster->getID());
-								}
+						if (!params.conditionList.empty()) {
+							for (const auto& condition : params.conditionList) {
+								if (caster == creature || !creature->isImmune(condition->getType())) {
+									Condition* conditionCopy = condition->clone();
+									if (caster) {
+										conditionCopy->setParam(CONDITION_PARAM_OWNER, caster->getID());
+									}
 
-								// TODO: infight condition until all aggressive conditions has ended
-								creature->addCombatCondition(conditionCopy);
+									// TODO: infight condition until all aggressive conditions has ended
+									creature->addCombatCondition(conditionCopy);
+								}
 							}
 						}
 					}
@@ -910,6 +900,10 @@ void Combat::doAreaCombat(Creature* caster, const Position& position, const Area
 	auto tiles =
 	    caster ? getCombatArea(caster->getPosition(), position, area) : getCombatArea(position, position, area);
 
+	if (tiles.empty()) {
+		return;
+	}
+
 	Player* casterPlayer = caster ? caster->getPlayer() : nullptr;
 	int32_t criticalPrimary = 0;
 	int32_t criticalSecondary = 0;
@@ -1014,7 +1008,7 @@ void Combat::doAreaCombat(Creature* caster, const Position& position, const Area
 		}
 
 		if (success) {
-			if (damage.blockType == BLOCK_NONE || damage.blockType == BLOCK_ARMOR) {
+			if ((damage.blockType == BLOCK_NONE || damage.blockType == BLOCK_ARMOR) && !params.conditionList.empty()) {
 				for (const auto& condition : params.conditionList) {
 					if (caster == creature || !creature->isImmune(condition->getType())) {
 						Condition* conditionCopy = condition->clone();

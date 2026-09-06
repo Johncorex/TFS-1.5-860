@@ -94,6 +94,12 @@ void Spells::clearMaps(bool fromLua)
 			++rune;
 		}
 	}
+
+	// Rebuild the instant spell index
+	instantIndex.clear();
+	for (auto& [words, spell] : instants) {
+		instantIndex[words] = &spell;
+	}
 }
 
 void Spells::clear(bool fromLua)
@@ -125,6 +131,8 @@ bool Spells::registerEvent(Event_ptr event, const pugi::xml_node&)
 		if (!result.second) {
 			std::cout << "[Warning - Spells::registerEvent] Duplicate registered instant spell with words: "
 			          << instant->getWords() << std::endl;
+		} else {
+			instantIndex[result.first->first] = &result.first->second;
 		}
 		return result.second;
 	}
@@ -151,6 +159,8 @@ bool Spells::registerInstantLuaEvent(InstantSpell* event)
 		if (!result.second) {
 			std::cout << "[Warning - Spells::registerInstantLuaEvent] Duplicate registered instant spell with words: "
 			          << words << std::endl;
+		} else {
+			instantIndex[result.first->first] = &result.first->second;
 		}
 		return result.second;
 	}
@@ -209,14 +219,22 @@ RuneSpell* Spells::getRuneSpellByName(std::string_view name)
 
 InstantSpell* Spells::getInstantSpell(std::string_view words)
 {
-	InstantSpell* result = nullptr;
+	// Fast path: O(1) exact word lookup via hash map
+	std::string wordsStr(words);
+	auto it = instantIndex.find(wordsStr);
+	if (it != instantIndex.end()) {
+		InstantSpell* spell = it->second;
+		return spell;
+	}
 
-	for (auto& it : instants) {
-		auto instantSpellWords = it.second.getWords();
+	// Slow path: O(n) prefix scan for "spell param" style
+	InstantSpell* result = nullptr;
+	for (auto& [key, spell] : instants) {
+		auto instantSpellWords = spell.getWords();
 		size_t spellLen = instantSpellWords.length();
 		if (caseInsensitiveStartsWith(words, instantSpellWords)) {
 			if (!result || spellLen > result->getWords().size()) {
-				result = &it.second;
+				result = &spell;
 				if (words.length() == spellLen) {
 					break;
 				}

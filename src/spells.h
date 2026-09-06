@@ -10,6 +10,8 @@
 #include "talkaction.h"
 #include "vocation.h"
 
+#include <unordered_map>
+
 class InstantSpell;
 class RuneSpell;
 class Spell;
@@ -55,6 +57,7 @@ private:
 
 	std::map<uint16_t, RuneSpell> runes;
 	std::map<std::string, InstantSpell> instants;
+	std::unordered_map<std::string, InstantSpell*> instantIndex;
 
 	friend class CombatSpell;
 	LuaScriptInterface scriptInterface{"Spell Interface"};
