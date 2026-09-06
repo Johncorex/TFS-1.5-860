@@ -4,6 +4,8 @@
 #ifndef FS_SPECTATORS_H
 #define FS_SPECTATORS_H
 
+#include <unordered_set>
+
 class Creature;
 
 class SpectatorVec
@@ -13,16 +15,19 @@ class SpectatorVec
 	using ConstIterator = Vec::const_iterator;
 
 public:
-	SpectatorVec() { vec.reserve(32); }
+	SpectatorVec() = default;
 
 	void addSpectators(const SpectatorVec& spectators)
 	{
+		if (spectators.vec.empty()) {
+			return;
+		}
+
+		std::unordered_set<Creature*> seen(vec.begin(), vec.end());
 		for (Creature* spectator : spectators.vec) {
-			auto it = std::find(vec.begin(), vec.end(), spectator);
-			if (it != end()) {
-				continue;
+			if (seen.insert(spectator).second) {
+				vec.emplace_back(spectator);
 			}
-			vec.emplace_back(spectator);
 		}
 	}
 
@@ -35,6 +40,9 @@ public:
 		std::iter_swap(it, end() - 1);
 		vec.pop_back();
 	}
+
+	void clear() { vec.clear(); }
+	void reserve(size_t n) { vec.reserve(n); }
 
 	size_t size() const { return vec.size(); }
 	bool empty() const { return vec.empty(); }

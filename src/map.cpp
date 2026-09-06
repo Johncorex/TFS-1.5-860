@@ -275,10 +275,8 @@ void Map::moveCreature(Creature& creature, Tile& newTile, bool forceTeleport /* 
 
 	bool teleport = forceTeleport || !newTile.getGround() || !oldPos.isInRange(newPos, 1, 1, 0);
 
-	SpectatorVec spectators, newPosSpectators;
-	getSpectators(spectators, oldPos, true);
-	getSpectators(newPosSpectators, newPos, true);
-	spectators.addSpectators(newPosSpectators);
+	SpectatorVec spectators;
+	getSpectators(spectators, oldPos, true, false, -maxViewportX - 1, maxViewportX + 1, -maxViewportY - 1, maxViewportY + 1);
 
 	std::vector<int32_t> oldStackPosVector;
 	for (Creature* spectator : spectators) {
@@ -421,28 +419,21 @@ void Map::getSpectators(SpectatorVec& spectators, const Position& centerPos, boo
 	if (minRangeX == -maxViewportX && maxRangeX == maxViewportX && minRangeY == -maxViewportY &&
 	    maxRangeY == maxViewportY && multifloor) {
 		if (onlyPlayers) {
-			if (playersSpectatorCache.contains(centerPos)) {
-				if (!spectators.empty()) {
-					spectators.addSpectators(playersSpectatorCache[centerPos]);
-				} else {
-					spectators = playersSpectatorCache[centerPos];
-				}
-
+			auto it = playersSpectatorCache.find(centerPos);
+			if (it != playersSpectatorCache.end()) {
+				spectators = it->second;
 				foundCache = true;
 			}
 		}
 
 		if (!foundCache) {
-			if (spectatorCache.contains(centerPos)) {
+			auto it = spectatorCache.find(centerPos);
+			if (it != spectatorCache.end()) {
 				if (!onlyPlayers) {
-					if (!spectators.empty()) {
-						const SpectatorVec& cachedSpectators = spectatorCache[centerPos];
-						spectators.addSpectators(cachedSpectators);
-					} else {
-						spectators = spectatorCache[centerPos];
-					}
+					spectators = it->second;
 				} else {
-					const SpectatorVec& cachedSpectators = spectatorCache[centerPos];
+					const SpectatorVec& cachedSpectators = it->second;
+					spectators.reserve(cachedSpectators.size());
 					for (Creature* spectator : cachedSpectators) {
 						if (spectator->getPlayer()) {
 							spectators.emplace_back(spectator);

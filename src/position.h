@@ -65,4 +65,16 @@ struct Position
 
 std::ostream& operator<<(std::ostream&, const Position&);
 
+namespace std {
+	template<>
+	struct hash<Position> {
+		size_t operator()(const Position& p) const {
+			size_t h = std::hash<uint16_t>{}(p.x);
+			h ^= std::hash<uint16_t>{}(p.y) << 16;
+			h ^= std::hash<uint8_t>{}(p.z) << 24;
+			return h;
+		}
+	};
+}
+
 #endif // FS_POSITION_H
