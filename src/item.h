@@ -889,6 +889,11 @@ public:
 
 	virtual void startDecaying();
 
+	size_t getDecayBucketIndex() const { return decayBucketIndex; }
+	void setDecayBucketIndex(size_t index) { decayBucketIndex = index; }
+	bool isDecayValid() const { return decayValid; }
+	void setDecayValid(bool valid) { decayValid = valid; }
+
 	bool isLoadedFromMap() const { return loadedFromMap; }
 	void setLoadedFromMap(bool value) { loadedFromMap = value; }
 	bool isCleanable() const
@@ -936,6 +941,9 @@ private:
 	uint8_t count = 1; // number of stacked items
 
 	bool loadedFromMap = false;
+
+	size_t decayBucketIndex = 0;
+	bool decayValid = false;
 
 	// Don't add variables here, use the ItemAttribute class.
 };
