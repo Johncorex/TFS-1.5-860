@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/TFS-1.5.860-blue?style=for-the-badge" alt="TFS Version"/>
   <img src="https://img.shields.io/badge/Language-C%2B%2B17-orange?style=for-the-badge" alt="C++17"/>
-  <img src="https://img.shields.io/badge/Protocol-15.25-green?style=for-the-badge" alt="Protocol 15.25"/>
+  <img src="https://img.shields.io/badge/Protocol-8.60-green?style=for-the-badge" alt="Protocol 8.60"/>
   <img src="https://img.shields.io/badge/License-GPL--2.0-red?style=for-the-badge" alt="License"/>
   <img src="https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge" alt="Status"/>
 </p>
