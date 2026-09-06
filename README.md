@@ -130,12 +130,7 @@ sudo mysql -u root tfs < ../world.sql
 | Feature | Descrição |
 |---------|-----------|
 | **Emote Spells** | Sistema de spells por emotes com toggle por jogador |
-| **Forge System** | Sistema de forge otimizado com limits configuráveis |
-| **Charm Points** | API Lua para charm points |
-| **Prey Wildcard** | API Lua para prey wildcards |
-| **Crystal Forge Tier** | Sistema de tier para crystal forge |
-| **Spoof Outfit** | Sistema de outfits randomizados para NPCs fake |
-| **Exhaust System** | Cooldown granular por tipo de ação |
+| **Exhaust System** | Cooldown granular por tipo de ação (200ms padrão, 500ms NPC talk) |
 
 ---
 
