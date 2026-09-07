@@ -6,7 +6,8 @@ OTCFeatures = {
 	12, -- GamePlayerMounts
 	29, -- GameDoubleSkills
 	53, -- GameBaseSkillU16
-	76 -- GameAdditionalSkills
+	76, -- GameAdditionalSkills
+	80 -- GameExtendedOpcode (silences OTCv8 opcode-201 log spam; unknown opcodes are ignored server-side)
 }
 
 -- Protocol things

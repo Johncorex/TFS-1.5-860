@@ -12,7 +12,7 @@
 #include "server.h"
 
 namespace {
-constexpr uint32_t MAX_CONNECTIONS_PER_IP = 3;
+constexpr uint32_t MAX_CONNECTIONS_PER_IP = 5;
 constexpr uint32_t MAX_GLOBAL_CONNECTIONS = 2000;
 constexpr uint32_t MAX_NEW_CONNECTIONS_PER_SECOND = 20;
 } // namespace
@@ -30,6 +30,14 @@ Connection_ptr ConnectionManager::createConnection(boost::asio::io_service& io_s
 	}
 
 	auto connection = std::make_shared<Connection>(io_service, servicePort);
+
+	// Resolve the client IP up-front: lastIp stays 0 until the first packet,
+	// which used to make all per-IP checks below dead code. Tracked here and
+	// released in ~Connection, so the counts stay balanced.
+	connection->lastIp = connection->getIP();
+	if (connection->lastIp != 0) {
+		++ipConnectionCount[connection->lastIp];
+	}
 
 	// Per-IP connection limit (anti-WPE / anti-DDoS)
 	if (connection->lastIp != 0 && ipConnectionCount[connection->lastIp] > MAX_CONNECTIONS_PER_IP) {
@@ -90,18 +98,23 @@ void ConnectionManager::untrackIP(uint32_t ip)
 bool ConnectionManager::isConnectionRateAllowed(uint32_t ip)
 {
 	auto now = static_cast<uint64_t>(OTSYS_TIME());
-	auto& timestamps = connectionRateMap[ip];
 
-	// Remove timestamps older than 1 second
-	while (!timestamps.empty() && timestamps.front() <= now - 1000) {
-		timestamps.erase(timestamps.begin());
+	// Prune timestamps older than 1 second, drop the entry when idle
+	auto it = connectionRateMap.find(ip);
+	if (it != connectionRateMap.end()) {
+		auto& timestamps = it->second;
+		while (!timestamps.empty() && timestamps.front() <= now - 1000) {
+			timestamps.erase(timestamps.begin());
+		}
+
+		if (timestamps.empty()) {
+			connectionRateMap.erase(it);
+		} else if (timestamps.size() >= MAX_NEW_CONNECTIONS_PER_SECOND) {
+			return false;
+		}
 	}
 
-	if (timestamps.size() >= MAX_NEW_CONNECTIONS_PER_SECOND) {
-		return false;
-	}
-
-	timestamps.push_back(now);
+	connectionRateMap[ip].push_back(now);
 	return true;
 }
 
