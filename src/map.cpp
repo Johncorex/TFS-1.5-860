@@ -275,8 +275,10 @@ void Map::moveCreature(Creature& creature, Tile& newTile, bool forceTeleport /* 
 
 	bool teleport = forceTeleport || !newTile.getGround() || !oldPos.isInRange(newPos, 1, 1, 0);
 
-	SpectatorVec spectators;
-	getSpectators(spectators, oldPos, true, false, -maxViewportX - 1, maxViewportX + 1, -maxViewportY - 1, maxViewportY + 1);
+	SpectatorVec spectators, newPosSpectators;
+	getSpectators(spectators, oldPos, true);
+	getSpectators(newPosSpectators, newPos, true);
+	spectators.addSpectators(newPosSpectators);
 
 	std::vector<int32_t> oldStackPosVector;
 	for (Creature* spectator : spectators) {

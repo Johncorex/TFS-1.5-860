@@ -606,10 +606,12 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 
 	// Action cooldown check (anti-spam)
 	int64_t cooldown = getPacketCooldown(recvbyte);
-	if (cooldown > 0 && !player->canPerformAction(cooldown)) {
-		return;
+	if (cooldown > 0) {
+		if (!player->canPerformAction(cooldown)) {
+			return;
+		}
+		player->setLastActionTime();
 	}
-	player->setLastActionTime();
 
 	// Account Manager
 	if (player->isAccountManager()) {
