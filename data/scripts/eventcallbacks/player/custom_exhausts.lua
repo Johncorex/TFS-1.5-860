@@ -53,12 +53,22 @@ local RUNE_SPELLS = {
 	["Paralyze Rune"] = true,
 }
 
-local function checkExhaust(player, storageKey, windowMs)
-	if os.mtime() < player:getStorageValue(storageKey) then
+-- NOTE: timestamps are kept in a Lua table (memory only, never in storages),
+-- because os.mtime() milliseconds overflow the INT player_storage column.
+local exhaustUntil = {
+	potion = {},
+	rune = {},
+	heal = {},
+}
+
+local function checkExhaust(player, lane, windowMs)
+	local guid = player:getGuid()
+	local now = os.mtime()
+	if now < (lane[guid] or 0) then
 		player:sendCancelMessage(RETURNVALUE_YOUAREEXHAUSTED)
 		return false
 	end
-	player:setStorageValue(storageKey, os.mtime() + windowMs)
+	lane[guid] = now + windowMs
 	return true
 end
 
@@ -67,7 +77,7 @@ function checkPotionExhaust(player)
 	if player:getGroup():getAccess() then
 		return true -- staff bypass
 	end
-	return checkExhaust(player, PlayerStorageKeys.exhaustPotion, POTION_EXHAUST_MS)
+	return checkExhaust(player, exhaustUntil.potion, POTION_EXHAUST_MS)
 end
 
 -- Rune + Heal lanes (hooked on every spell cast, engine exhaust removed)
@@ -79,10 +89,10 @@ function exhaustEvent.onSpellCheck(player, spell)
 	end
 	local spellName = spell:name()
 	if HEAL_SPELLS[spellName] then
-		return checkExhaust(player, PlayerStorageKeys.exhaustHeal, HEAL_EXHAUST_MS)
+		return checkExhaust(player, exhaustUntil.heal, HEAL_EXHAUST_MS)
 	end
 	if RUNE_SPELLS[spellName] then
-		return checkExhaust(player, PlayerStorageKeys.exhaustRune, RUNE_EXHAUST_MS)
+		return checkExhaust(player, exhaustUntil.rune, RUNE_EXHAUST_MS)
 	end
 	return true -- attack instants: engine COMBAT exhaust applies
 end

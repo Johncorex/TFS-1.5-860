@@ -13,9 +13,6 @@ PlayerStorageKeys = {
 	madSheepSummon = 30023,
 	crateUsable = 30024,
 	vipExpires = 30030,
-	exhaustPotion = 30031,
-	exhaustRune = 30032,
-	exhaustHeal = 30033,
 	achievementsBase = 300000,
 	achievementsCounter = 20000
 }
