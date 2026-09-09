@@ -99,7 +99,7 @@
 	</instant>
 
 	<!-- Healing Spells -->
-	<instant group="healing" name="Cure Poison" words="exana pox" level="10" mana="30" aggressive="0" selftarget="1" needlearn="0" script="healing/cure_poison.lua">
+	<instant group="healing" name="Cure Poison" words="exana pox" level="10" mana="30" aggressive="0" selftarget="1" cooldown="6000" needlearn="0" script="healing/cure_poison.lua">
 		<vocation name="Sorcerer" />
 		<vocation name="Druid" />
 		<vocation name="Paladin" />

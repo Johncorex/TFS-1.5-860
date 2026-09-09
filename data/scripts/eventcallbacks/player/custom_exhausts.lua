@@ -6,7 +6,7 @@
 -- ============================================================
 
 local POTION_EXHAUST_MS = 800
-local RUNE_EXHAUST_MS = 1000
+local RUNE_EXHAUST_MS = 2000
 local HEAL_EXHAUST_MS = 1000
 
 local HEAL_SPELLS = {
@@ -16,7 +16,6 @@ local HEAL_SPELLS = {
 	["Heal Friend"] = true, -- exura sio
 	["Divine Healing"] = true, -- exura san
 	["Mass Healing"] = true, -- exura gran mas res
-	["Cure Poison"] = true, -- exana pox
 }
 
 local RUNE_SPELLS = {
