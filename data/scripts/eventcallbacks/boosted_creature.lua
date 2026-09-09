@@ -34,7 +34,8 @@ local function validNames(list, kind)
 end
 
 local function pickDaily(list)
-	local daySeed = tonumber(os.date("%Y%j"))
+	-- Dia "do save": vira junto com o server save das 23:55 (offset em segundos)
+	local daySeed = tonumber(os.date("%Y%j", os.time() - (23 * 3600 + 55 * 60)))
 	math.randomseed(daySeed)
 	local choice = list[math.random(#list)]
 	math.randomseed(os.time())
