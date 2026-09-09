@@ -1349,6 +1349,10 @@ void Player::setNextActionTask(SchedulerTask* task, bool resetIdleTime /*= true 
 }
 
 uint32_t Player::getNextActionTime() const { return std::max<int64_t>(SCHEDULER_MINTICKS, nextAction - OTSYS_TIME()); }
+uint32_t Player::getNextPushTime(int64_t cooldown) const
+{
+	return static_cast<uint32_t>(std::max<int64_t>(SCHEDULER_MINTICKS, lastPushTime + cooldown - OTSYS_TIME()));
+}
 
 void Player::onThink(uint32_t interval)
 {

@@ -38,6 +38,9 @@ extern MoveEvents* g_moveEvents;
 extern Weapons* g_weapons;
 extern Scripts* g_scripts;
 
+// Independent push (shove creature) exhaust, does not share the action timer.
+constexpr int64_t PUSH_COOLDOWN_MS = 600;
+
 Game::~Game()
 {
 	for (const auto& it : guilds) {
@@ -617,6 +620,12 @@ void Game::playerMoveThing(uint32_t playerId, const Position& fromPos, uint16_t 
 			return;
 		}
 
+		if (!player->canPush(PUSH_COOLDOWN_MS)) {
+			player->sendCancelMessage(RETURNVALUE_YOUAREEXHAUSTED);
+			return;
+		}
+		player->setLastPushTime();
+
 		if (movingCreature->getPosition().isInRange(player->getPosition(), 1, 1, 0)) {
 			SchedulerTask* task =
 			    createSchedulerTask(static_cast<uint32_t>(getInteger(ConfigManager::RANGE_MOVE_CREATURE_INTERVAL)),
@@ -672,17 +681,6 @@ void Game::playerMoveCreature(Player* player, Creature* movingCreature, const Po
 			}
 		}
 
-		return;
-	}
-
-	if (!player->canDoAction()) {
-		uint32_t delay = player->getNextActionTime();
-		SchedulerTask* task =
-		    createSchedulerTask(delay, [=, this, playerID = player->getID(), movingCreatureID = movingCreature->getID(),
-		                                toPos = toTile->getPosition()]() {
-			    playerMoveCreatureByID(playerID, movingCreatureID, movingCreatureOrigPos, toPos);
-		    });
-		player->setNextActionTask(task);
 		return;
 	}
 

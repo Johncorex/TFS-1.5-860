@@ -924,6 +924,9 @@ public:
 
 	bool canPerformAction(int64_t cooldown) const { return OTSYS_TIME() >= lastActionTime + cooldown; }
 	void setLastActionTime() { lastActionTime = OTSYS_TIME(); }
+	bool canPush(int64_t cooldown) const { return OTSYS_TIME() >= lastPushTime + cooldown; }
+	uint32_t getNextPushTime(int64_t cooldown) const;
+	void setLastPushTime() { lastPushTime = OTSYS_TIME(); }
 	int64_t getLastNpcTalkTime() const { return lastNpcTalkTime; }
 	void setLastNpcTalkTime(int64_t time) { lastNpcTalkTime = time; }
 
@@ -1069,6 +1072,7 @@ private:
 	int64_t lastPong;
 	int64_t nextAction = 0;
 	int64_t lastActionTime = 0;
+	int64_t lastPushTime = 0;
 	int64_t lastNpcTalkTime = 0;
 
 	uint32_t lastIP = 0;
