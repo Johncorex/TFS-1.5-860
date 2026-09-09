@@ -112,6 +112,10 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
 		return true
 	end
 
+	if not checkPotionExhaust(player) then
+		return true -- 800ms individual exhaust (does not block runes/spells)
+	end
+
 	if potion.condition then
 		player:addCondition(potion.condition)
 		player:say(potion.text, TALKTYPE_MONSTER_SAY)

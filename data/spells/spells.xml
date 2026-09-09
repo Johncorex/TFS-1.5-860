@@ -99,7 +99,7 @@
 	</instant>
 
 	<!-- Healing Spells -->
-	<instant group="healing" name="Cure Poison" words="exana pox" level="10" mana="30" aggressive="0" selftarget="1" cooldown="6000" needlearn="0" script="healing/cure_poison.lua">
+	<instant group="healing" name="Cure Poison" words="exana pox" level="10" mana="30" aggressive="0" selftarget="1" needlearn="0" script="healing/cure_poison.lua">
 		<vocation name="Sorcerer" />
 		<vocation name="Druid" />
 		<vocation name="Paladin" />
@@ -109,15 +109,15 @@
 		<vocation name="Royal Paladin" />
 		<vocation name="Elite Knight" />
 	</instant>
-	<instant group="healing" name="Divine Healing" words="exura san" level="35" mana="160" premium="0" selftarget="1" aggressive="0" cooldown="1000" needlearn="0" script="healing/divine_healing.lua">
+	<instant group="healing" name="Divine Healing" words="exura san" level="35" mana="160" premium="0" selftarget="1" aggressive="0" needlearn="0" script="healing/divine_healing.lua">
 		<vocation name="Paladin" />
 		<vocation name="Royal Paladin" />
 	</instant>
-	<instant group="healing" name="Heal Friend" words="exura sio" level="18" mana="140" premium="1" aggressive="0" blockwalls="1" needtarget="1" playernameparam="1" params="1" cooldown="1000" needlearn="0" script="healing/heal_friend.lua">
+	<instant group="healing" name="Heal Friend" words="exura sio" level="18" mana="140" premium="1" aggressive="0" blockwalls="1" needtarget="1" playernameparam="1" params="1" needlearn="0" script="healing/heal_friend.lua">
 		<vocation name="Druid" />
 		<vocation name="Elder Druid" />
 	</instant>
-	<instant group="healing" name="Intense Healing" words="exura gran" level="20" mana="70" aggressive="0" selftarget="1" cooldown="1000" needlearn="0" script="healing/intense_healing.lua">
+	<instant group="healing" name="Intense Healing" words="exura gran" level="20" mana="70" aggressive="0" selftarget="1" needlearn="0" script="healing/intense_healing.lua">
 		<vocation name="Sorcerer" />
 		<vocation name="Druid" />
 		<vocation name="Paladin" />
@@ -125,7 +125,7 @@
 		<vocation name="Elder Druid" />
 		<vocation name="Royal Paladin" />
 	</instant>
-	<instant group="healing" name="Light Healing" words="exura" level="8" mana="20" aggressive="0" selftarget="1" cooldown="1000" needlearn="0" script="healing/light_healing.lua">
+	<instant group="healing" name="Light Healing" words="exura" level="8" mana="20" aggressive="0" selftarget="1" needlearn="0" script="healing/light_healing.lua">
 		<vocation name="Sorcerer" />
 		<vocation name="Druid" />
 		<vocation name="Paladin" />
@@ -133,11 +133,11 @@
 		<vocation name="Elder Druid" />
 		<vocation name="Royal Paladin" />
 	</instant>
-	<instant group="healing" name="Mass Healing" words="exura gran mas res" level="36" mana="150" premium="1" aggressive="0" cooldown="2000" needlearn="0" script="healing/mass_healing.lua">
+	<instant group="healing" name="Mass Healing" words="exura gran mas res" level="36" mana="150" premium="1" aggressive="0" needlearn="0" script="healing/mass_healing.lua">
 		<vocation name="Druid" />
 		<vocation name="Elder Druid" />
 	</instant>
-	<instant group="healing" name="Ultimate Healing" words="exura vita" level="30" mana="160" aggressive="0" selftarget="1" cooldown="1000" needlearn="0" script="healing/ultimate_healing.lua">
+	<instant group="healing" name="Ultimate Healing" words="exura vita" level="30" mana="160" aggressive="0" selftarget="1" needlearn="0" script="healing/ultimate_healing.lua">
 		<vocation name="Sorcerer" />
 		<vocation name="Druid" />
 		<vocation name="Master Sorcerer" />
@@ -292,50 +292,50 @@
 	</instant>
 
 	<!-- Attack Runes -->
-	<rune group="attack" name="Avalanche Rune" id="2274" allowfaruse="1" charges="4" level="30" magiclevel="4" cooldown="2000" script="attack/avalanche_rune.lua" />
-	<rune group="attack" name="Energy Bomb Rune" id="2262" allowfaruse="1" charges="2" level="37" magiclevel="10" cooldown="2000" blocktype="solid" script="attack/energy_bomb_rune.lua" />
-	<rune group="attack" name="Energy Field Rune" id="2277" allowfaruse="1" charges="3" level="18" magiclevel="3" cooldown="2000" blocktype="solid" script="attack/energy_field_rune.lua" />
-	<rune group="attack" name="Energy Wall Rune" id="2279" allowfaruse="1" charges="4" level="41" magiclevel="9" cooldown="2000" blocktype="solid" script="attack/energy_wall_rune.lua" />
-	<rune group="attack" name="Explosion Rune" id="2313" allowfaruse="1" charges="6" level="31" magiclevel="6" cooldown="2000" blocktype="solid" script="attack/explosion_rune.lua" />
-	<rune group="attack" name="Fire Bomb Rune" id="2305" allowfaruse="1" charges="2" level="27" magiclevel="5" cooldown="2000" blocktype="solid" script="attack/fire_bomb_rune.lua" />
-	<rune group="attack" name="Fire Field Rune" id="2301" allowfaruse="1" charges="3" level="15" magiclevel="1" cooldown="2000" blocktype="solid" script="attack/fire_field_rune.lua" />
-	<rune group="attack" name="Fire Wall Rune" id="2303" allowfaruse="1" charges="4" level="33" magiclevel="6" cooldown="2000" blocktype="solid" script="attack/fire_wall_rune.lua" />
-	<rune group="attack" name="Fireball Rune" id="2302" allowfaruse="1" charges="5" level="27" magiclevel="4" cooldown="2000" needtarget="1" blocktype="solid" script="attack/fireball_rune.lua" />
-	<rune group="attack" name="Great Fireball Rune" id="2304" allowfaruse="1" charges="4" level="30" magiclevel="4" cooldown="2000" blocktype="solid" script="attack/great_fireball_rune.lua" />
-	<rune group="attack" name="Heavy Magic Missile Rune" id="2311" allowfaruse="1" charges="10" level="25" cooldown="2000" magiclevel="3" needtarget="1" blocktype="solid" script="attack/heavy_magic_missile_rune.lua" />
-	<rune group="attack" name="Holy Missile Rune" id="2295" allowfaruse="1" charges="5" level="27" magiclevel="4" cooldown="2000" needtarget="1" blocktype="solid" script="attack/holy_missile_rune.lua">
+	<rune group="attack" name="Avalanche Rune" id="2274" allowfaruse="1" charges="4" level="30" magiclevel="4" script="attack/avalanche_rune.lua" />
+	<rune group="attack" name="Energy Bomb Rune" id="2262" allowfaruse="1" charges="2" level="37" magiclevel="10" blocktype="solid" script="attack/energy_bomb_rune.lua" />
+	<rune group="attack" name="Energy Field Rune" id="2277" allowfaruse="1" charges="3" level="18" magiclevel="3" blocktype="solid" script="attack/energy_field_rune.lua" />
+	<rune group="attack" name="Energy Wall Rune" id="2279" allowfaruse="1" charges="4" level="41" magiclevel="9" blocktype="solid" script="attack/energy_wall_rune.lua" />
+	<rune group="attack" name="Explosion Rune" id="2313" allowfaruse="1" charges="6" level="31" magiclevel="6" blocktype="solid" script="attack/explosion_rune.lua" />
+	<rune group="attack" name="Fire Bomb Rune" id="2305" allowfaruse="1" charges="2" level="27" magiclevel="5" blocktype="solid" script="attack/fire_bomb_rune.lua" />
+	<rune group="attack" name="Fire Field Rune" id="2301" allowfaruse="1" charges="3" level="15" magiclevel="1" blocktype="solid" script="attack/fire_field_rune.lua" />
+	<rune group="attack" name="Fire Wall Rune" id="2303" allowfaruse="1" charges="4" level="33" magiclevel="6" blocktype="solid" script="attack/fire_wall_rune.lua" />
+	<rune group="attack" name="Fireball Rune" id="2302" allowfaruse="1" charges="5" level="27" magiclevel="4" needtarget="1" blocktype="solid" script="attack/fireball_rune.lua" />
+	<rune group="attack" name="Great Fireball Rune" id="2304" allowfaruse="1" charges="4" level="30" magiclevel="4" blocktype="solid" script="attack/great_fireball_rune.lua" />
+	<rune group="attack" name="Heavy Magic Missile Rune" id="2311" allowfaruse="1" charges="10" level="25" magiclevel="3" needtarget="1" blocktype="solid" script="attack/heavy_magic_missile_rune.lua" />
+	<rune group="attack" name="Holy Missile Rune" id="2295" allowfaruse="1" charges="5" level="27" magiclevel="4" needtarget="1" blocktype="solid" script="attack/holy_missile_rune.lua">
 		<vocation name="Paladin" />
 		<vocation name="Royal Paladin" showInDescription="0" />
 	</rune>
-	<rune group="attack" name="Icicle Rune" id="2271" allowfaruse="1" charges="5" level="28" magiclevel="4" cooldown="2000" needtarget="1" script="attack/icicle_rune.lua" />
-	<rune group="attack" name="Magic Wall Rune" id="2293" allowfaruse="1" charges="3" level="32" magiclevel="9" cooldown="2000" blocktype="all" script="support/magic_wall_rune.lua" />
-	<rune group="attack" name="Poison Bomb Rune" id="2286" allowfaruse="1" charges="2" level="25" magiclevel="4" cooldown="2000" blocktype="solid" script="attack/poison_bomb_rune.lua" />
-	<rune group="attack" name="Poison Field Rune" id="2285" allowfaruse="1" charges="3" level="14" magiclevel="0" cooldown="2000" blocktype="solid" script="attack/poison_field_rune.lua" />
-	<rune group="attack" name="Poison Wall Rune" id="2289" allowfaruse="1" charges="4" level="29" magiclevel="5" cooldown="2000" blocktype="solid" script="attack/poison_wall_rune.lua" />
-	<rune group="attack" name="Soulfire Rune" id="2308" allowfaruse="1" charges="3" level="27" magiclevel="7" cooldown="2000" needtarget="1" blocktype="solid" script="attack/soulfire_rune.lua" />
-	<rune group="attack" name="Stalagmite Rune" id="2292" allowfaruse="1" charges="10" level="24" magiclevel="3" cooldown="2000" needtarget="1" script="attack/stalagmite_rune.lua" />
-	<rune group="attack" name="Stone Shower Rune" id="2288" allowfaruse="1" charges="4" level="28" magiclevel="4" cooldown="2000" script="attack/stone_shower_rune.lua" />
-	<rune group="attack" name="Sudden Death Rune" id="2268" allowfaruse="1" charges="3" level="45" magiclevel="15" cooldown="2000" needtarget="1" blocktype="solid" script="attack/sudden_death_rune.lua" />
-	<rune group="attack" name="Thunderstorm Rune" id="2315" allowfaruse="1" charges="4" level="28" magiclevel="4" cooldown="2000" script="attack/thunderstorm_rune.lua" />
+	<rune group="attack" name="Icicle Rune" id="2271" allowfaruse="1" charges="5" level="28" magiclevel="4" needtarget="1" script="attack/icicle_rune.lua" />
+	<rune group="attack" name="Magic Wall Rune" id="2293" allowfaruse="1" charges="3" level="32" magiclevel="9" blocktype="all" script="support/magic_wall_rune.lua" />
+	<rune group="attack" name="Poison Bomb Rune" id="2286" allowfaruse="1" charges="2" level="25" magiclevel="4" blocktype="solid" script="attack/poison_bomb_rune.lua" />
+	<rune group="attack" name="Poison Field Rune" id="2285" allowfaruse="1" charges="3" level="14" magiclevel="0" blocktype="solid" script="attack/poison_field_rune.lua" />
+	<rune group="attack" name="Poison Wall Rune" id="2289" allowfaruse="1" charges="4" level="29" magiclevel="5" blocktype="solid" script="attack/poison_wall_rune.lua" />
+	<rune group="attack" name="Soulfire Rune" id="2308" allowfaruse="1" charges="3" level="27" magiclevel="7" needtarget="1" blocktype="solid" script="attack/soulfire_rune.lua" />
+	<rune group="attack" name="Stalagmite Rune" id="2292" allowfaruse="1" charges="10" level="24" magiclevel="3" needtarget="1" script="attack/stalagmite_rune.lua" />
+	<rune group="attack" name="Stone Shower Rune" id="2288" allowfaruse="1" charges="4" level="28" magiclevel="4" script="attack/stone_shower_rune.lua" />
+	<rune group="attack" name="Sudden Death Rune" id="2268" allowfaruse="1" charges="3" level="45" magiclevel="15" needtarget="1" blocktype="solid" script="attack/sudden_death_rune.lua" />
+	<rune group="attack" name="Thunderstorm Rune" id="2315" allowfaruse="1" charges="4" level="28" magiclevel="4" script="attack/thunderstorm_rune.lua" />
 
 	<!-- Healing Runes -->
-	<rune group="healing" name="Cure Poison Rune" id="2266" allowfaruse="1" charges="1" level="15" magiclevel="0" cooldown="2000" aggressive="0" needtarget="1" blocktype="solid" script="healing/cure_poison_rune.lua" />
-	<rune group="healing" name="Intense Healing Rune" id="2265" allowfaruse="1" charges="1" level="15" magiclevel="1" cooldown="2000" aggressive="0" needtarget="1" blocktype="solid" script="healing/intense_healing_rune.lua" />
-	<rune group="healing" name="Ultimate Healing Rune" id="2273" allowfaruse="1" charges="1" level="24" magiclevel="4" cooldown="2000" aggressive="0" needtarget="1" blocktype="solid" script="healing/ultimate_healing_rune.lua" />
+	<rune group="healing" name="Cure Poison Rune" id="2266" allowfaruse="1" charges="1" level="15" magiclevel="0" aggressive="0" needtarget="1" blocktype="solid" script="healing/cure_poison_rune.lua" />
+	<rune group="healing" name="Intense Healing Rune" id="2265" allowfaruse="1" charges="1" level="15" magiclevel="1" aggressive="0" needtarget="1" blocktype="solid" script="healing/intense_healing_rune.lua" />
+	<rune group="healing" name="Ultimate Healing Rune" id="2273" allowfaruse="1" charges="1" level="24" magiclevel="4" aggressive="0" needtarget="1" blocktype="solid" script="healing/ultimate_healing_rune.lua" />
 
 	<!-- Summon Runes -->
-	<rune group="support" name="Animate Dead Rune" id="2316" allowfaruse="1" charges="1" level="27" magiclevel="4" cooldown="2000" blocktype="solid" script="support/animate_dead_rune.lua" />
-	<rune group="support" name="Convince Creature Rune" id="2290" allowfaruse="1" charges="1" level="16" magiclevel="5" cooldown="2000" needtarget="1" blocktype="solid" script="support/convince_creature.lua" />
+	<rune group="support" name="Animate Dead Rune" id="2316" allowfaruse="1" charges="1" level="27" magiclevel="4" blocktype="solid" script="support/animate_dead_rune.lua" />
+	<rune group="support" name="Convince Creature Rune" id="2290" allowfaruse="1" charges="1" level="16" magiclevel="5" needtarget="1" blocktype="solid" script="support/convince_creature.lua" />
 
 	<!-- Support Runes -->
-	<rune group="support" name="Chameleon Rune" id="2291" allowfaruse="1" charges="1" level="27" magiclevel="4" cooldown="2000" aggressive="0" selftarget="1" blocktype="solid" script="support/chameleon.lua" />
-	<rune group="support" name="Disintegrate Rune" id="2310" allowfaruse="0" charges="3" level="21" magiclevel="4" cooldown="2000" range="1" script="support/disintegrate_rune.lua" />
-	<rune group="support" name="Destroy Field Rune" id="2261" allowfaruse="1" charges="3" level="17" magiclevel="3" cooldown="2000" aggressive="0" range="5" script="support/destroy_field_rune.lua" />
-	<rune group="support" name="Wild Growth Rune" id="2269" allowfaruse="1" charges="2" level="27" magiclevel="8" cooldown="2000" blocktype="all" script="support/wild_growth_rune.lua">
+	<rune group="support" name="Chameleon Rune" id="2291" allowfaruse="1" charges="1" level="27" magiclevel="4" aggressive="0" selftarget="1" blocktype="solid" script="support/chameleon.lua" />
+	<rune group="support" name="Disintegrate Rune" id="2310" allowfaruse="0" charges="3" level="21" magiclevel="4" range="1" script="support/disintegrate_rune.lua" />
+	<rune group="support" name="Destroy Field Rune" id="2261" allowfaruse="1" charges="3" level="17" magiclevel="3" aggressive="0" range="5" script="support/destroy_field_rune.lua" />
+	<rune group="support" name="Wild Growth Rune" id="2269" allowfaruse="1" charges="2" level="27" magiclevel="8" blocktype="all" script="support/wild_growth_rune.lua">
 		<vocation name="Druid" />
 		<vocation name="Elder Druid" showInDescription="0" />
 	</rune>
-	<rune group="support" name="Paralyze Rune" id="2278" allowfaruse="1" charges="1" level="54" magiclevel="18" cooldown="2000" mana="1400" needtarget="1" blocktype="solid" script="support/paralyze_rune.lua">
+	<rune group="support" name="Paralyze Rune" id="2278" allowfaruse="1" charges="1" level="54" magiclevel="18" mana="1400" needtarget="1" blocktype="solid" script="support/paralyze_rune.lua">
 		<vocation name="Druid" />
 		<vocation name="Elder Druid" showInDescription="0" />
 	</rune>
