@@ -170,6 +170,11 @@ private:
 
 	Position masterPos;
 
+	// Cache for hasNearbyPlayer(): the full player-list scan is expensive
+	// and this is called up to 2x per think (250ms), so reuse for 1s.
+	mutable int64_t lastNearbyPlayerCheck = 0;
+	mutable bool cachedHasNearbyPlayer = false;
+
 	bool ignoreFieldDamage = false;
 	bool isIdle = true;
 	bool isMasterInRange = false;

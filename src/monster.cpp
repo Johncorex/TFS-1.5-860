@@ -93,6 +93,16 @@ bool Monster::canSee(const Position& pos) const
 
 bool Monster::hasNearbyPlayer() const
 {
+	// Called up to twice per think (every 250ms) for every monster: updateIdleStatus
+	// plus the onThink AI gate. Cache the O(players) scan briefly; worst case a
+	// monster notices a player up to 1s later, unnoticeable in practice.
+	const int64_t now = OTSYS_TIME();
+	if (now - lastNearbyPlayerCheck < 1000) {
+		return cachedHasNearbyPlayer;
+	}
+	lastNearbyPlayerCheck = now;
+
+	bool found = false;
 	const Position& myPos = getPosition();
 	for (const auto& [playerID, player] : g_game.getPlayers()) {
 		if (player->isRemoved() || player->isDead()) {
@@ -105,10 +115,12 @@ bool Monster::hasNearbyPlayer() const
 		int32_t dx = std::abs(myPos.x - pos.x);
 		int32_t dy = std::abs(myPos.y - pos.y);
 		if (dx <= 15 && dy <= 15) {
-			return true;
+			found = true;
+			break;
 		}
 	}
-	return false;
+	cachedHasNearbyPlayer = found;
+	return found;
 }
 
 bool Monster::canWalkOnFieldType(CombatType_t combatType) const
