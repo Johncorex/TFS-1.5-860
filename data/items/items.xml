@@ -16523,9 +16523,9 @@
 		<attribute key="description" value="Your name is carved on this mighty sword." />
 		<attribute key="weight" value="1200" />
 	</item>
-	<item id="8981" article="a" name="golden newspaper">
+	<item id="8981" article="a" name="VIP 30 Days">
 		<attribute key="weight" value="2400" />
-		<attribute key="description" value="The worlds most amazing news can be read in it. It was awarded for winning a contest." />
+		<attribute key="description" value="Use it to receive 30 days of VIP status." />
 	</item>
 	<item id="8982" article="a" name="norseman doll">
 		<attribute key="description" value="It is given to the winners of competitions." />
