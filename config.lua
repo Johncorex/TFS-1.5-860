@@ -52,7 +52,7 @@ allowWalkthrough = true
 serverName = "Forgotten"
 statusTimeout = 5000
 replaceKickOnLogin = true
-maxPacketsPerSecond = 50
+maxPacketsPerSecond = 100
 
 -- Deaths
 -- NOTE: Leave deathLosePercent as -1 if you want to use the default
